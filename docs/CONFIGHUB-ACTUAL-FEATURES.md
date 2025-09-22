@@ -190,8 +190,8 @@ client.BulkPatchUnits(
 
 ## ⚠️ What We Need to Fix in Our Documentation
 
-1. **Remove all references to "variants"** - they don't exist
-2. **Remove "CloneWithVariant"** - not a real operation
+1. **CORRECTED**: Variants DO exist through clone+edit pattern
+2. **Remove "CloneWithVariant" API** - use clone+edit instead
 3. **Remove "gates" for promotion control** - not how it works
 4. **Remove "GetDependencyGraph"** - doesn't exist
 5. **Fix upgrade pattern** - use push-upgrade, not "UpgradeSet"

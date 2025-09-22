@@ -50,7 +50,9 @@ func (b *BranchDeployer) MonitorBranches() error {
                 // 2. Clone with variant (saves resources)
                 parentSpace := b.determineParentSpace(branch)
                 branchSpace := fmt.Sprintf("%s-%s", parentSpace, branch.Name)
-                b.Cub.CloneWithVariant(parentSpace, branchSpace, previewVariant)
+                // Clone and edit to create preview variant
+                b.Cub.CloneSpace(parentSpace, branchSpace)
+                b.Cub.EditUnits(branchSpace, previewVariant)
 
                 // 3. Use FILTERS to deploy only changed units
                 filter := Filter{
@@ -104,7 +106,11 @@ func (b *BranchDeployer) OnGitPush(event GitPushEvent) {
 
         // 2. Clone with minimal variant for previews
         variant := b.selectVariant(event.Branch)
-        err := b.Cub.CloneWithVariant(parentSpace, spaceName, variant)
+        // Clone and edit to create variant
+        err := b.Cub.CloneSpace(parentSpace, spaceName)
+        if err == nil {
+            err = b.Cub.EditUnits(spaceName, variant)
+        }
         if err != nil {
             b.handleCloneError(err)
             return
