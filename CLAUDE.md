@@ -1,7 +1,65 @@
 # Claude Code Context for DevOps as Apps Project
 
+## Project Overview
+This is a "DevOps as Apps" platform that competes with Cased.com by using persistent Kubernetes applications (not ephemeral workflows) with ConfigHub + SDK + Claude as the core platform. The goal is to build DevOps automation tools as long-running apps.
+
 ## Critical Information
 This project uses ConfigHub as its configuration management backend. Many features that might seem obvious DO NOT EXIST in ConfigHub. This file serves as your reference for what's real.
+
+## 🚨 CRITICAL: ConfigHub Self-Deployment Pattern
+
+**ALL DevOps apps MUST deploy themselves through ConfigHub units**, not kubectl:
+```bash
+# CORRECT way (ConfigHub-driven):
+bin/install-base      # Creates units in ConfigHub
+bin/install-envs      # Sets up env hierarchy
+bin/apply-all dev     # Deploys via ConfigHub
+
+# WRONG way (don't do this):
+kubectl apply -f k8s/
+```
+
+See `docs/CONFIGHHUB-DEPLOYMENT-PATTERN.md` for details.
+
+## How to Continue This Project
+
+### Step 1: Read Competitor Analysis
+- **Cased.com**: https://docs.cased.com/ and https://cased.com/
+  - Understand their ephemeral workflow approach
+  - Our approach: persistent applications are better than ephemeral workflows
+
+### Step 2: Read ConfigHub Source Code
+- **ConfigHub repo**: `/Users/alexisrichardson/github-repos/confighub/`
+- **Key files to read**:
+  - `internal/models/set.go` - Understand Sets (REAL feature)
+  - `internal/models/filter.go` - Understand Filters (REAL feature)
+  - `internal/views/set.go` - Set operations
+  - `public/openapi/goclient-new/models.gen.go` - API types
+- **Search patterns**: `grep -r "BulkPatch" /Users/alexisrichardson/github-repos/confighub/`
+
+### Step 3: Read Reference Implementation
+- **Global-app**: `/Users/alexisrichardson/examples-internal/global-app/README.md`
+  - Shows how ConfigHub manages microservices across environments
+  - Uses hierarchical spaces (base → QA → staging → prod)
+  - Demonstrates real ConfigHub patterns
+- **Key commands**: `cub unit tree --node=space --filter $(bin/proj)/app --space '*'`
+
+### Step 4: Read Our Project Documentation
+- **Master plan**: `docs/DEVOPS-AS-APPS-MASTER-PLAN.md` - Core architecture
+- **Implementation plan**: `docs/DEVOPS-AS-APPS-PLAN.md` - Detailed steps
+- **API reference**: `docs/CONFIGHUB-ACTUAL-FEATURES.md` - What's real vs hallucinated
+- **Development guide**: `DEVELOPMENT.md` - Multi-repo setup
+
+### Step 5: Review Current Implementation
+- **SDK**: `/Users/alexisrichardson/github-repos/devops-sdk/`
+  - `confighub.go` - Real ConfigHub client with Sets, Filters, bulk ops
+  - `app.go` - Base DevOps app framework
+  - `claude.go` - Claude integration
+  - `kubernetes.go` - K8s utilities
+- **Drift Detector**: `/Users/alexisrichardson/github-repos/devops-examples/drift-detector/`
+  - `main.go` - Full implementation using Sets/Filters/informers
+  - `main_test.go` - Comprehensive tests
+  - `integration_test.go` - Real ConfigHub API tests
 
 ## REAL ConfigHub Features ✅
 These are the ONLY features that actually exist:
@@ -72,26 +130,127 @@ for {
 6. Dev Mode: ConfigHub → Kubernetes (direct)
 7. Enterprise Mode: ConfigHub → Git → Flux/Argo → Kubernetes
 
-## Testing Commands
-When implementing features, run these commands:
+## Testing Commands & Principles
+
+### **Standard Testing Protocol**
+Always follow this 2-step testing approach:
+
+#### **Step 1: Local Tests First**
 ```bash
 # Build
 go build ./...
 
-# Test
-go test ./...
+# Unit tests (mock data, no external dependencies)
+go test -v
 
-# Lint (if available)
-golangci-lint run
+# Demo mode (simulated workflow)
+./drift-detector demo
 
-# Format
+# Format and lint
 go fmt ./...
+golangci-lint run  # if available
 ```
 
-## Key Documents
-- `docs/CONFIGHUB-ACTUAL-FEATURES.md` - API reference (ALWAYS consult this)
+#### **Step 2: Real Integration Tests**
+```bash
+# Set up real ConfigHub connection
+export CUB_TOKEN="your-confighub-token"
+export CUB_API_URL="https://confighub.com/api/v1"
+
+# Integration tests with real ConfigHub
+go test -tags=integration -v
+
+# Set up local Kind cluster
+kind create cluster --name devops-test
+
+# Deploy and test with real infrastructure
+kubectl apply -f k8s/
+./drift-detector  # runs against real ConfigHub + Kind cluster
+```
+
+### **Testing Environment Setup**
+```bash
+# Kind cluster for testing
+kind create cluster --name devops-test
+kubectl cluster-info --context kind-devops-test
+
+# ConfigHub credentials (get from confighub.com)
+export CUB_TOKEN="your-token-here"
+export CUB_API_URL="https://confighub.com/api/v1"
+
+# Optional: Claude for AI features
+export CLAUDE_API_KEY="your-claude-key"
+```
+
+## Current Status (as of implementation)
+✅ **Completed**:
+- SDK with real ConfigHub API (Sets, Filters, Push-upgrade)
+- Drift detector using event-driven informers (not polling)
+- Comprehensive testing (unit + integration)
+- All 3 repos created: devops-as-apps-project, devops-sdk, devops-examples
+
+🔄 **Next Steps**:
+- Create web GUI for drift-detector
+- Deploy and verify in Kubernetes
+- Implement cost-optimizer and other DevOps apps
+- Add Enterprise Mode (ConfigHub → Git → Flux/Argo)
+
+## Important File Locations
+
+### Project Structure
+```
+/Users/alexisrichardson/github-repos/
+├── confighub/                    # ConfigHub source (READ-ONLY)
+├── devops-as-apps-project/       # Planning and docs
+│   ├── docs/                     # All planning documents
+│   ├── .claude-code/            # Claude Code configuration
+│   └── CLAUDE.md                # This file
+├── devops-sdk/                   # Reusable SDK
+│   ├── confighub.go             # Real ConfigHub client
+│   ├── app.go                   # Base app framework
+│   └── go.mod                   # Module: github.com/monadic/devops-sdk
+└── devops-examples/              # Example implementations
+    └── drift-detector/           # Working drift detector
+        ├── main.go              # Uses Sets/Filters/informers
+        ├── main_test.go         # Unit tests
+        └── integration_test.go  # Real API tests
+```
+
+### GitHub Repositories
+- https://github.com/monadic/devops-as-apps-project
+- https://github.com/monadic/devops-sdk
+- https://github.com/monadic/devops-examples
+
+### Reference Implementations
+- `/Users/alexisrichardson/examples-internal/global-app/` - ConfigHub usage patterns
+- Look for `bin/install-base` and `bin/install-envs` scripts
+
+### Testing Commands
+```bash
+# Build everything
+cd /Users/alexisrichardson/github-repos/devops-sdk && go build ./...
+cd /Users/alexisrichardson/github-repos/devops-examples/drift-detector && go build .
+
+# Run tests
+go test -v                           # Unit tests
+go test -tags=integration -v         # Integration tests (needs CUB_TOKEN)
+
+# Test with real ConfigHub
+export CUB_TOKEN="your-token"
+export CUB_API_URL="https://api.confighub.com/v1"
+go test -tags=integration -v
+```
+
+## Key Documents (ALWAYS READ THESE FIRST)
+- `docs/CONFIGHUB-ACTUAL-FEATURES.md` - API reference (CRITICAL)
 - `docs/DEVOPS-AS-APPS-MASTER-PLAN.md` - Master implementation plan
 - `docs/DEVOPS-AS-APPS-PLAN.md` - Detailed guide
+- `/Users/alexisrichardson/examples-internal/global-app/README.md` - Reference patterns
+
+## Context from Previous Sessions
+This project started as analysis of Cased.com, then evolved into building a better competitor using ConfigHub. The key insight was that persistent DevOps applications are better than ephemeral workflows. We discovered many ConfigHub features were hallucinated and had to rewrite everything to use only real APIs from the source code.
+
+The drift-detector is now a fully working example that demonstrates all the key patterns: Sets for grouping, Filters for targeting, push-upgrade for propagation, and informers for event-driven architecture.
 
 ## Remember
-If you're about to use a ConfigHub feature, VERIFY it exists in the actual features document first. When in doubt, use only the confirmed operations: CreateSpace, CreateUnit, ApplyUnit, DestroyUnit, CreateSet, GetSet, CreateFilter, BulkPatchUnits, BulkApplyUnits.
+If you're about to use a ConfigHub feature, VERIFY it exists in `docs/CONFIGHUB-ACTUAL-FEATURES.md` first. When in doubt, use only the confirmed operations: CreateSpace, CreateUnit, ApplyUnit, DestroyUnit, CreateSet, GetSet, CreateFilter, BulkPatchUnits, BulkApplyUnits.

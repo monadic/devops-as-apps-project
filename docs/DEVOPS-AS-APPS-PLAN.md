@@ -20,6 +20,24 @@ Both drift-detector and cost-optimizer follow the exact same pattern as business
 - **State Management**: Maintain context between runs
 - **Full Lifecycle**: Versioning, deployment, monitoring, rollback
 
+### 1.5 ConfigHub Self-Deployment Pattern (Critical!)
+Following global-app pattern, **DevOps apps deploy themselves through ConfigHub**:
+- **All K8s manifests are ConfigHub units** - not raw YAML files
+- **Environment hierarchy** - base → dev → staging → prod
+- **Push-upgrade for promotion** - not kubectl apply
+- **Bulk operations** - deploy entire app stack with one command
+
+```bash
+# The NEW way (ConfigHub-driven):
+bin/install-base      # Creates units in ConfigHub
+bin/install-envs      # Sets up env hierarchy
+bin/apply-all dev     # Deploys via ConfigHub
+bin/promote dev staging  # Promotes with push-upgrade
+
+# NOT the old way:
+kubectl apply -f k8s/
+```
+
 ### 2. Claude Integration is Event-Driven
 The Claude integration uses informers, not polling:
 ```go
@@ -46,15 +64,16 @@ Kubernetes Cluster
 
 #### Enterprise Mode (GitOps)
 ```yaml
-ConfigHub (configuration source)
+ConfigHub (source of truth + versioning + approvals)
     ↓ (sync)
-Git Repository (audit trail)
+Git Repository (GitOps bridge)
     ↓ (Flux/Argo)
 Kubernetes Cluster
 ```
-- Full audit trail in Git
-- Flux/Argo for enterprise compliance
-- ConfigHub still drives configuration
+- ConfigHub maintains version history and approvals
+- Git serves as bridge to GitOps tooling
+- Flux/Argo for GitOps-specific compliance needs
+- ConfigHub is still the source of truth
 
 ### 4. The SDK Pattern Accelerates Development
 Common patterns extracted into `/Users/alexisrichardson/github-repos/devops-sdk/` dramatically reduce boilerplate and ensure consistency.
@@ -62,6 +81,19 @@ Common patterns extracted into `/Users/alexisrichardson/github-repos/devops-sdk/
 ## Step-by-Step Implementation Plan
 
 ### Phase 1: Build Core Example Apps (4-6 weeks)
+
+Each app MUST follow the standard structure with ConfigHub deployment:
+
+```
+security-scanner/
+├── confighub/base/         # K8s manifests as ConfigHub units
+├── bin/                    # Standard deployment scripts
+│   ├── install-base        # Creates ConfigHub structure
+│   ├── install-envs        # Sets up env hierarchy
+│   ├── apply-all           # Deploys via ConfigHub
+│   └── promote            # Promotes between envs
+└── main.go                # App implementation
+```
 
 #### App 1: Security Scanner (Enhanced with ConfigHub Features)
 ```go

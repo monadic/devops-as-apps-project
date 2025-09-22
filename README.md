@@ -5,6 +5,7 @@ Building DevOps automation as persistent Kubernetes applications using ConfigHub
 
 ## Key Documents
 - `docs/CONFIGHUB-ACTUAL-FEATURES.md` - What ConfigHub REALLY does (review this first!)
+- `docs/CONFIGHHUB-DEPLOYMENT-PATTERN.md` - **CRITICAL: How ALL DevOps apps must deploy**
 - `docs/DEVOPS-AS-APPS-MASTER-PLAN.md` - Master implementation plan
 - `docs/DEVOPS-AS-APPS-PLAN.md` - Detailed implementation guide
 - `docs/DEPLOY-FROM-BRANCH-PATTERN.md` - Branch deployment pattern
@@ -19,20 +20,30 @@ Building DevOps automation as persistent Kubernetes applications using ConfigHub
 4. Follow Enterprise Mode for production
 
 ## ConfigHub Real Features ✅
-- **Spaces & Units** - Core configuration management
+- **Spaces & Units** - Core configuration management with full version history
 - **Sets** - Group related units for bulk operations
 - **Filters** - Powerful WHERE clauses for queries
 - **Upstream/Downstream** - Configuration inheritance
 - **Push-upgrade** - Propagate changes with `BulkPatchUnits(Upgrade: true)`
 - **Apply/Destroy** - Deploy and remove configurations
 - **Live State** - Track deployment status (read-only)
+- **Version Control** - Every unit change is versioned (no Git needed for config versioning)
+- **ApplyGates** - Approval workflows for deployments
+- **Audit Trail** - Complete history of who changed what, when, and why
 
-## What NOT to Use ❌
-- **Variants** - Don't exist (no aws-variant, gcp-variant)
-- **Gates** - Don't exist (no promotion gates)
+## ConfigHub Patterns That Work Differently Than Expected
+
+### ✅ Variants DO Exist! (Through Clone + Edit)
+- Create variants by cloning units and editing them
+- Each clone can have different customizations = variants
+- Clone upgrade preserves local changes
+- Example: `aws-prod`, `gcp-prod`, `azure-prod` spaces with different configs
+
+### ❌ What NOT to Use
+- **CloneWithVariant API** - Not a specific operation (use clone + edit instead)
+- **Gates** - Don't exist (no promotion gates, but ApplyGates do exist)
 - **Dependency graphs** - Don't exist (no GetDependencyGraph)
 - **UpdateStatus** - Can't update live status
-- **CloneWithVariant** - Not a real operation
 - **UpgradeSet** - Use push-upgrade instead
 
 ## Two Deployment Modes
@@ -47,11 +58,12 @@ ConfigHub → Kubernetes
 
 ### Enterprise Mode (GitOps)
 ```
-ConfigHub → Git → Flux/Argo → Kubernetes
+ConfigHub (versioning + approvals) → Git (bridge) → Flux/Argo → Kubernetes
 ```
-- Full audit trail in Git
-- Flux/Argo for compliance
-- ConfigHub drives configuration
+- ConfigHub provides versioning and approval workflows
+- Git serves as bridge to GitOps tools (Flux/Argo)
+- ConfigHub maintains full audit trail
+- No duplicate versioning (ConfigHub already has it)
 
 ## Project Structure
 ```
@@ -124,11 +136,32 @@ BulkApplyUnits(BulkApplyParams{
 })
 ```
 
+## Testing Protocol
+
+### Step 1: Local Tests First ⚡
+```bash
+cd devops-examples/drift-detector
+go test -v              # Unit tests with mocks
+./drift-detector demo   # Simulated workflow
+```
+
+### Step 2: Real Integration Tests 🔗
+```bash
+# Setup real infrastructure
+export CUB_TOKEN="your-confighub-token"
+kind create cluster --name devops-test
+
+# Test with real services
+go test -tags=integration -v
+./drift-detector  # Real ConfigHub + Kind cluster
+```
+
 ## Contributing
 1. Always use real ConfigHub APIs
-2. Test against actual ConfigHub instance
-3. Document any new patterns discovered
-4. Update `docs/CONFIGHUB-ACTUAL-FEATURES.md` if you discover new APIs
+2. Follow 2-step testing protocol (local → real)
+3. Test against confighub.com + local Kind cluster
+4. Document any new patterns discovered
+5. Update `docs/CONFIGHUB-ACTUAL-FEATURES.md` if you discover new APIs
 
 ## License
 Proprietary - ConfigHub, Inc.

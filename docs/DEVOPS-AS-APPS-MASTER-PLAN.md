@@ -22,16 +22,37 @@ Kubernetes Cluster
 
 ### Enterprise Mode (GitOps)
 ```yaml
-ConfigHub (configuration source)
+ConfigHub (configuration source + versioning + approvals)
     ↓ (sync)
-Git Repository (audit trail)
+Git Repository (GitOps bridge)
     ↓ (Flux/Argo)
 Kubernetes Cluster
 ```
-- Full audit trail in Git
-- Flux/Argo for enterprise compliance
-- ConfigHub still drives configuration
-- Git provides versioning and approval workflows
+- ConfigHub provides versioning and approval workflows for config
+- Git acts as bridge to GitOps tools (Flux/Argo)
+- ConfigHub maintains full audit trail and version history
+- Flux/Argo for GitOps compliance requirements
+
+## 🎯 Critical Pattern: ConfigHub Self-Deployment
+
+Following the global-app pattern, **ALL DevOps apps deploy themselves through ConfigHub units**:
+
+```bash
+# Not this (old way):
+kubectl apply -f k8s/deployment.yaml
+
+# But this (ConfigHub way):
+bin/install-base      # Create units in ConfigHub
+bin/install-envs      # Create env hierarchy
+bin/apply-all dev     # Apply via ConfigHub
+```
+
+### Why This Matters
+1. **Dogfooding**: DevOps apps use ConfigHub just like business apps
+2. **Consistency**: Same deployment pattern for all apps
+3. **Environment Management**: dev → staging → prod with push-upgrade
+4. **Audit Trail**: All changes tracked in ConfigHub
+5. **Bulk Operations**: Deploy entire app stack with one command
 
 ## Chapter 1: Actual ConfigHub Feature Utilization
 
@@ -47,6 +68,21 @@ Space: drift-detector-prod
 
 # Units can have upstream/downstream relationships
 Upstream: base-drift-detector → Downstream: prod-drift-detector
+```
+
+### 1.2 Variants Through Clone + Edit Pattern
+**CORRECTED UNDERSTANDING**: Variants DO exist through cloning and editing:
+```bash
+# Create regional variants
+cub unit clone drift-detector-base --to-space drift-detector-aws
+cub unit edit drift-detector --space drift-detector-aws  # AWS-specific settings
+
+cub unit clone drift-detector-base --to-space drift-detector-gcp
+cub unit edit drift-detector --space drift-detector-gcp  # GCP-specific settings
+
+# Clone upgrade preserves variants!
+cub unit update drift-detector --space drift-detector-aws --upgrade
+# AWS customizations are preserved during upgrade
 ```
 
 ### 1.2 Upstream/Downstream for Configuration Inheritance
@@ -326,10 +362,10 @@ type EnterpriseModeApp struct {
 }
 
 func (e *EnterpriseModeApp) Deploy() error {
-    // 1. Get units from ConfigHub
+    // 1. Get versioned units from ConfigHub
     units := e.Cub.GetUnits(e.space)
 
-    // 2. Sync to Git for audit trail
+    // 2. Sync to Git as bridge to GitOps tools
     e.git.CommitUnits(units, "Synced from ConfigHub")
 
     // 3. Let Flux/Argo handle deployment
@@ -345,15 +381,22 @@ func (e *EnterpriseModeApp) Deploy() error {
 }
 
 func (e *EnterpriseModeApp) Promote() error {
-    // Enterprise flow with approvals
-    pr := e.git.CreatePR("qa", "staging", "Promotion")
+    // ConfigHub handles approvals via ApplyGates
+    gates := e.Cub.GetApplyGates(e.space, "staging")
 
-    // Wait for manual approval (outside ConfigHub)
-    if !e.waitForManualApproval() {
-        return fmt.Errorf("promotion rejected")
+    if gates.RequiresApproval {
+        // Wait for approval IN ConfigHub
+        approval := e.Cub.RequestApproval("qa", "staging", "Promotion")
+        if !e.Cub.WaitForApproval(approval) {
+            return fmt.Errorf("promotion rejected in ConfigHub")
+        }
     }
 
-    e.git.MergePR(pr)
+    // Push-upgrade in ConfigHub (with version history)
+    e.Cub.PushUpgrade("qa", "staging")
+
+    // Sync approved changes to Git for GitOps
+    e.git.SyncFromConfigHub()
     e.flux.Reconcile()
 
     return nil
@@ -435,17 +478,47 @@ type ConfigHubOperations interface {
 │   ├── confighub.go        # Full ConfigHub features
 │   ├── kubernetes.go       # K8s utilities with informers
 │   └── modes.go            # Dev vs Enterprise modes
-├── devops-examples/         # Example apps
-│   ├── drift-detector/      # Uses sets, filters
-│   ├── cost-optimizer/      # Uses sets, filters
-│   ├── security-scanner/    # Uses filters, bulk ops
-│   ├── compliance-auditor/  # Uses sets, filters
-│   ├── upgrade-manager/     # Uses push-upgrade
-│   └── branch-deployer/     # Uses upstream/downstream
+├── devops-examples/         # Example apps (each with ConfigHub deployment)
+│   ├── drift-detector/
+│   │   ├── confighub/      # ConfigHub unit definitions
+│   │   │   └── base/       # Base K8s manifests as units
+│   │   ├── bin/            # Deployment scripts
+│   │   │   ├── install-base    # Create ConfigHub structure
+│   │   │   ├── install-envs    # Set up env hierarchy
+│   │   │   ├── apply-all       # Deploy via ConfigHub
+│   │   │   └── promote         # Push-upgrade pattern
+│   │   └── main.go         # App implementation
+│   ├── cost-optimizer/      # Same structure
+│   ├── security-scanner/    # Same structure
+│   ├── compliance-auditor/  # Same structure
+│   ├── upgrade-manager/     # Same structure
+│   └── branch-deployer/     # Same structure
 └── claude-operator/         # Optional CRD
     ├── controllers/
     └── examples/
 ```
+
+### Standard DevOps App Structure
+
+Every DevOps app MUST follow this structure:
+
+```
+app-name/
+├── confighub/
+│   └── base/
+│       ├── namespace.yaml           # K8s namespace
+│       ├── app-deployment.yaml      # Deployment spec
+│       ├── app-service.yaml         # Service definition
+│       └── app-rbac.yaml           # RBAC configuration
+├── bin/
+│   ├── install-base                # Creates ConfigHub units
+│   ├── install-envs                # Creates env hierarchy
+│   ├── apply-all [env]             # Applies to K8s via ConfigHub
+│   ├── promote [from] [to]         # Promotes between envs
+│   ├── cleanup                     # Removes all resources
+│   └── proj                        # Gets project name
+├── main.go                         # App implementation
+└── README.md                       # Includes ConfigHub deployment
 
 ## Chapter 7: Implementation Strategy
 

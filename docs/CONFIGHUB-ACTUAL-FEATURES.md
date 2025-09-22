@@ -12,6 +12,12 @@ Based on reviewing the actual ConfigHub source code at `github.com/confighubai/c
 - **Filters**: Query and filter units (extensive filter API in client)
 - **ChangeSets**: Groups of changes to apply together
 
+### Key ConfigHub Capabilities
+- **Version History**: Every unit change is versioned (HeadRevisionNum, Version fields)
+- **Approval Workflows**: ApplyGates for controlling deployments
+- **Audit Trail**: Complete tracking of all changes
+- **Upstream/Downstream**: Inheritance and push-upgrade patterns
+
 ### Actual API Operations (from `public/openapi/goclient-new/client.gen.go`)
 
 #### Space Operations
@@ -80,15 +86,29 @@ cub unit livestate      # Get live deployment status
 - AppConfig/Properties
 - ConfigHub/YAML
 
+## ✅ CORRECTED: Variants DO Exist Through Clone + Edit Pattern!
+
+### Variants ARE REAL - Just Not Named "Variants"
+After reviewing the helm-platform-components example, variants DO exist through:
+1. **Clone units** to create downstream copies
+2. **Edit clones** to add local customizations (these become variants!)
+3. **Clone upgrade** preserves local changes during updates
+
+Example:
+```bash
+# Create regional variants
+cub unit clone app-base --to-space aws-prod
+cub unit edit app --space aws-prod  # Add AWS-specific settings = AWS variant!
+
+cub unit clone app-base --to-space gcp-prod
+cub unit edit app --space gcp-prod  # Add GCP-specific settings = GCP variant!
+```
+
 ## ❌ Features We ASSUMED But Are NOT Confirmed
 
-### 1. Variants ❌
-- No evidence of "variants" (aws-variant, gcp-variant) in the code
-- This was our hallucination!
-
 ### 2. CloneWithVariant ❌
-- No such operation found
-- Units can have upstream relationships but not "variant cloning"
+- No such specific API operation
+- BUT: You achieve the same result with clone + edit (see variants above)
 
 ### 3. Gates ❌
 - No "gates" for controlling promotion
