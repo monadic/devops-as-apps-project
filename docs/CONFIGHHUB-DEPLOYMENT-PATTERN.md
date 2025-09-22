@@ -101,13 +101,21 @@ spec:
 #!/bin/bash
 set -e
 
-# Generate or use existing project
+# Check for existing project
 if [ -e ".cub-project" ]; then
-  project=$(cat .cub-project)
-else
-  project="your-app-$(date +%s)"
-  echo $project > .cub-project
+  echo "Clean up previous usage with bin/cleanup or delete .cub-project"
+  exit 1
 fi
+
+# Generate unique prefix using ConfigHub
+if [ -z "$1" ]; then
+  prefix=$(cub space new-prefix)  # Returns like "chubby-paws"
+  project="${prefix}-your-app"    # Result: "chubby-paws-your-app"
+else
+  project=$1
+fi
+
+echo $project > .cub-project
 
 # Create spaces
 cub space create $project --label app=your-app
