@@ -1,0 +1,19 @@
+name: DevOps as Apps Platform
+description: Building DevOps automation as persistent Kubernetes apps using ConfigHub
+
+context:
+  - docs/CONFIGHUB-ACTUAL-FEATURES.md  # Always load this for API reference
+  - docs/DEVOPS-AS-APPS-MASTER-PLAN.md # Core planning document
+
+rules:
+  - Use only REAL ConfigHub APIs documented in CONFIGHUB-ACTUAL-FEATURES.md
+  - Never use variants, gates, or dependency graphs
+  - Use push-upgrade pattern for propagating changes
+  - Prefer Sets and Filters for bulk operations
+  - Always use informers instead of polling
+
+preferred_tools:
+  - language: go
+  - deployment: kubernetes
+  - config: confighub
+  - ai: claude

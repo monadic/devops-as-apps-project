@@ -1,0 +1,15 @@
+tasks:
+  phase1:
+    - implement: drift-detector with real ConfigHub APIs
+    - implement: cost-optimizer using Sets and Filters
+    - implement: upgrade-manager with push-upgrade
+
+  phase2:
+    - extract: common SDK patterns
+    - create: Dev mode implementation
+    - create: Enterprise mode with Flux/Argo
+
+  phase3:
+    - test: against real ConfigHub instance
+    - document: actual API usage patterns
+    - validate: no hallucinated features used
