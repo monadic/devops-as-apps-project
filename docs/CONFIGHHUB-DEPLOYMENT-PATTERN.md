@@ -291,36 +291,40 @@ cub unit list --space your-app-staging --filter "UpgradeNeeded = true"
 
 ## Common Patterns
 
-### Multi-Region Production (Using Variants!)
+### Multi-Region Production (Direct Editing!)
 ```bash
-# Create regional variants through clone + edit
+# Create regional variants by editing units directly in their spaces
 for region in us eu asia; do
-  # Step 1: Clone to create base
-  cub space create $project-$region-prod --upstream-space $project-prod
-  clone_units $project-prod $project-$region-prod $region-prod
+  # Step 1: Create regional space (if needed)
+  cub space create $project-$region-prod --label region=$region
 
-  # Step 2: Edit clones to create region-specific variants
+  # Step 2: Copy base units to regional space
+  for unit in app-deployment app-service app-rbac; do
+    cub unit create $unit --space $project-$region-prod \
+      --upstream-unit $unit --upstream-space $project-prod
+  done
+
+  # Step 3: Edit units directly for region-specific variants
   if [ "$region" == "us" ]; then
-    # US variant with higher resources
-    cub unit edit app-deployment --space $project-us-prod \
-      --patch '{"spec":{"replicas":5}}' \
+    # US variant: higher resources
+    echo '{"spec":{"replicas":5}}' | \
+      cub unit update app-deployment --space $project-us-prod --patch --from-stdin \
       --change-desc "US variant: scale for higher traffic"
   elif [ "$region" == "eu" ]; then
-    # EU variant with GDPR compliance
-    cub unit edit app-deployment --space $project-eu-prod \
-      --patch '{"metadata":{"labels":{"compliance":"gdpr"}}}' \
+    # EU variant: GDPR compliance
+    echo '{"metadata":{"labels":{"compliance":"gdpr"}}}' | \
+      cub unit update app-deployment --space $project-eu-prod --patch --from-stdin \
       --change-desc "EU variant: GDPR requirements"
   elif [ "$region" == "asia" ]; then
-    # Asia variant with different storage class
-    cub unit edit app-deployment --space $project-asia-prod \
-      --patch '{"spec":{"volumeClaimTemplates":[{"spec":{"storageClassName":"asia-ssd"}}]}}' \
-      --change-desc "Asia variant: regional storage"
+    # Asia variant: different storage class
+    echo '{"spec":{"template":{"spec":{"nodeSelector":{"zone":"asia-east1"}}}}}' | \
+      cub unit update app-deployment --space $project-asia-prod --patch --from-stdin \
+      --change-desc "Asia variant: regional nodes"
   fi
 done
 
-# Clone upgrade will preserve these regional variants!
-cub unit update --space $project-us-prod --upgrade
-# US-specific customizations remain intact
+# Each unit now has its own revision with regional customizations
+# No complex cloning needed - just direct edits!
 ```
 
 ### Feature Branch Deployment

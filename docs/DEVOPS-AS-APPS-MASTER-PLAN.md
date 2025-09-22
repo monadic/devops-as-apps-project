@@ -71,19 +71,20 @@ Space: chubby-paws-drift-detector-prod
 Upstream: chubby-paws-drift-detector-base → Downstream: chubby-paws-drift-detector-prod
 ```
 
-### 1.2 Variants Through Clone + Edit Pattern
-**CORRECTED UNDERSTANDING**: Variants DO exist through cloning and editing:
+### 1.2 Variants Through Direct Editing
+**CORRECTED UNDERSTANDING**: Create variants by directly editing units in place:
 ```bash
-# Create regional variants
-cub unit clone drift-detector-base --to-space drift-detector-aws
-cub unit edit drift-detector --space drift-detector-aws  # AWS-specific settings
+# Edit units directly to create variants - much simpler!
+echo '{"spec":{"env":[{"name":"CLOUD_PROVIDER","value":"aws"}]}}' | \
+  cub unit update drift-detector --space drift-detector-aws \
+  --patch --from-stdin --change-desc "AWS variant: cloud-specific config"
 
-cub unit clone drift-detector-base --to-space drift-detector-gcp
-cub unit edit drift-detector --space drift-detector-gcp  # GCP-specific settings
+echo '{"spec":{"env":[{"name":"CLOUD_PROVIDER","value":"gcp"}]}}' | \
+  cub unit update drift-detector --space drift-detector-gcp \
+  --patch --from-stdin --change-desc "GCP variant: cloud-specific config"
 
-# Clone upgrade preserves variants!
-cub unit update drift-detector --space drift-detector-aws --upgrade
-# AWS customizations are preserved during upgrade
+# Each edit creates a new revision automatically - no cloning needed!
+# Variants are preserved through ConfigHub's built-in versioning
 ```
 
 ### 1.2 Upstream/Downstream for Configuration Inheritance

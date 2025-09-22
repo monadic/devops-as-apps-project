@@ -86,23 +86,27 @@ cub unit livestate      # Get live deployment status
 - AppConfig/Properties
 - ConfigHub/YAML
 
-## ✅ CORRECTED: Variants DO Exist Through Clone + Edit Pattern!
+## ✅ CORRECTED: Variants Through Direct Editing!
 
-### Variants ARE REAL - Just Not Named "Variants"
-After reviewing the helm-platform-components example, variants DO exist through:
-1. **Clone units** to create downstream copies
-2. **Edit clones** to add local customizations (these become variants!)
-3. **Clone upgrade** preserves local changes during updates
+### Variants ARE REAL - Created by Direct Editing
+ConfigHub units support variants through direct editing (no cloning needed):
+1. **Edit units directly** in the target space
+2. **Each edit creates a new revision** automatically
+3. **ConfigHub versioning** preserves all changes
 
 Example:
 ```bash
-# Create regional variants
-cub unit clone app-base --to-space aws-prod
-cub unit edit app --space aws-prod  # Add AWS-specific settings = AWS variant!
+# Create regional variants by direct editing
+echo '{"spec":{"env":[{"name":"REGION","value":"aws"}]}}' | \
+  cub unit update app --space aws-prod --patch --from-stdin \
+  --change-desc "AWS variant: region-specific settings"
 
-cub unit clone app-base --to-space gcp-prod
-cub unit edit app --space gcp-prod  # Add GCP-specific settings = GCP variant!
+echo '{"spec":{"env":[{"name":"REGION","value":"gcp"}]}}' | \
+  cub unit update app --space gcp-prod --patch --from-stdin \
+  --change-desc "GCP variant: region-specific settings"
 ```
+
+**Key Insight**: Don't clone just to edit - edit directly where needed!
 
 ## ❌ Features We ASSUMED But Are NOT Confirmed
 
