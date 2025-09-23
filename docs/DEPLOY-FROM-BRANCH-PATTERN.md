@@ -1,31 +1,34 @@
-# Deploy from Branch: The Killer Feature in ConfigHub World
+# Deploy from Branch: Better Than Cased's Killer Feature
 
-## The Original Cased.com Insight
+## The Original Cased.com "Killer Branch Deploy"
 
-Cased's killer feature was "deploy from branch" - developers could push to a Git branch and automatically get a preview environment. This solved a huge pain point: testing changes in isolation before merging.
+Cased's killer feature was "deploy from branch" - developers could push to a Git branch and automatically get a **temporary, ephemeral** preview environment. While this solved testing in isolation, it had major limitations:
+- Environments destroyed after merge (waste resources on rebuild)
+- No inheritance model between environments
+- Stateless between deployments
+- Manual promotion between branches
 
-## How This Works with ConfigHub: Spaces ARE Branches
+## How We Do It Better: Persistent Spaces with Hierarchy
 
-### The Key Insight: Spaces as Deployment Branches
+### The Key Insight: Persistent Hierarchical Spaces vs Ephemeral Branches
 
 ```yaml
-# Traditional Git approach
-main branch → production
-staging branch → staging
-feature/xyz branch → preview environment
+# Cased approach (ephemeral)
+main branch → production (persistent)
+feature/xyz branch → temporary environment (destroyed after merge)
 
-# ConfigHub approach (with proper hierarchy)
-acorn-bear-base
-    └── acorn-bear-qa
-        └── acorn-bear-staging
-            ├── acorn-bear-prod
-            └── acorn-bear-feature-xyz (cloned from staging)
+# Our ConfigHub approach (canonical global-app pattern)
+{unique-prefix}-base              # e.g., chubby-paws-base
+    └── {prefix}-qa
+        └── {prefix}-staging
+            ├── {prefix}-prod
+            └── {prefix}-feature-xyz  # Created with upstream relationship
 
-# Branch-deployer app itself has hierarchy
-branch-deployer-base
-    └── branch-deployer-qa
-        └── branch-deployer-staging
-            └── branch-deployer-prod
+# Key differences:
+# 1. Uses 'cub space new-prefix' for unique naming
+# 2. Full upstream/downstream inheritance
+# 3. Environments persist and evolve (not destroyed)
+# 4. Push-upgrade propagates changes automatically
 ```
 
 ### The Deploy-from-Branch Pattern (Enhanced with ConfigHub Features)
@@ -44,15 +47,18 @@ func (b *BranchDeployer) MonitorBranches() error {
 
         for _, branch := range branches {
             if !b.hasSpace(branch) {
-                // 1. Use MINIMAL VARIANT for preview deployments
-                previewVariant := "minimal-variant" // Less resources for previews
-
-                // 2. Clone with variant (saves resources)
+                // 1. Create space with upstream relationship (canonical pattern)
                 parentSpace := b.determineParentSpace(branch)
-                branchSpace := fmt.Sprintf("%s-%s", parentSpace, branch.Name)
-                // Clone and edit to create preview variant
-                b.Cub.CloneSpace(parentSpace, branchSpace)
-                b.Cub.EditUnits(branchSpace, previewVariant)
+                branchSpace := fmt.Sprintf("%s-%s", b.projectPrefix, branch.Name)
+
+                // 2. Clone using canonical pattern from global-app
+                b.Cub.RunCommand("cub unit create --dest-space %s --space %s --filter %s/app --label targetable=true",
+                    branchSpace, parentSpace, b.projectPrefix)
+
+                // 3. Reduce resources for preview (edit in place)
+                b.Cub.UpdateUnit(branchSpace, UpdateUnitRequest{
+                    Data: b.getPreviewResourceLimits(),
+                })
 
                 // 3. Use FILTERS to deploy only changed units
                 filter := Filter{
@@ -100,17 +106,22 @@ func (b *BranchDeployer) OnGitPush(event GitPushEvent) {
         spaceName := b.formatSpaceName(event.Branch)
         parentSpace := b.determineParentSpace(event.Branch)
 
-        // 1. Check dependencies for the changed units
-        deps := b.Cub.GetDependencyGraph(parentSpace)
-        affectedUnits := deps.GetAffected(event.ChangedFiles)
+        // 1. Use canonical pattern to create unique prefix
+        projectPrefix := b.Cub.RunCommand("cub space new-prefix")
+        spaceName := fmt.Sprintf("%s-%s", projectPrefix, event.Branch.Name)
 
-        // 2. Clone with minimal variant for previews
-        variant := b.selectVariant(event.Branch)
-        // Clone and edit to create variant
-        err := b.Cub.CloneSpace(parentSpace, spaceName)
-        if err == nil {
-            err = b.Cub.EditUnits(spaceName, variant)
-        }
+        // 2. Create space with upstream relationship
+        b.Cub.CreateSpace(spaceName, CreateSpaceRequest{
+            Labels: map[string]string{
+                "project": projectPrefix,
+                "branch": event.Branch.Name,
+                "type": "preview",
+            },
+        })
+
+        // 3. Clone units with upstream (canonical pattern)
+        b.Cub.RunCommand("cub unit create --dest-space %s --space %s --filter %s/app",
+            spaceName, parentSpace, projectPrefix)
         if err != nil {
             b.handleCloneError(err)
             return
@@ -239,34 +250,38 @@ func (c *CubClient) Apply(space string, changes []Change) error {
 }
 ```
 
-## Advanced Patterns
+## Advanced Patterns with Canonical ConfigHub Features
 
-### 1. Smart Merge-Back
+### 1. Smart Merge Using Push-Upgrade
 
 ```go
 func (b *BranchDeployer) OnPullRequestMerged(pr PullRequest) {
     branchSpace := b.getSpaceForBranch(pr.Branch)
     targetSpace := b.getSpaceForBranch(pr.TargetBranch)
 
-    // Claude analyzes what should be merged
-    analysis := b.Claude.Analyze(`
-        Branch space config: ${branchSpace}
-        Target space config: ${targetSpace}
-        PR changes: ${pr.Changes}
+    // Use push-upgrade pattern (canonical from global-app)
+    b.Cub.RunCommand("cub unit update --patch --upgrade --space %s", targetSpace)
 
-        Which configuration changes should be merged?
-        Any conflicts to resolve?
-        Suggest merge strategy.
+    // Claude analyzes the upgrade impact
+    analysis := b.Claude.Analyze(`
+        Branch changes: ${pr.Changes}
+        Target space: ${targetSpace}
+        Upstream changes: ${b.getUpstreamChanges(targetSpace)}
+
+        Are these changes safe to propagate?
+        Any conflicts with downstream environments?
     `)
 
-    // Apply analyzed changes to target
-    for _, change := range analysis.MergeableChanges {
-        b.Cub.Apply(targetSpace, change)
+    if analysis.Safe {
+        // Push-upgrade propagates to all downstream environments
+        b.Cub.BulkPatchUnits(BulkPatchParams{
+            Where: fmt.Sprintf("UpstreamSpace = '%s'", targetSpace),
+            Upgrade: true,
+        })
     }
 
-    // Clean up branch space
-    b.Cub.DeleteSpace(branchSpace)
-    b.K8s.DeleteNamespace(fmt.Sprintf("preview-%s", branchSpace))
+    // Note: We DON'T delete the branch space - it can be reused!
+    // This is a key advantage over Cased's ephemeral approach
 }
 ```
 
@@ -331,17 +346,18 @@ func (b *BranchDeployer) DeployMicroservicesBranch(branch string) {
 }
 ```
 
-## Comparison: Git Branches vs ConfigHub Spaces
+## Comparison: Cased "Killer Branch Deploy" vs Our Approach
 
-| Aspect | Git + Traditional CI/CD | ConfigHub Spaces |
-|--------|-------------------------|------------------|
-| **Branch Creation** | `git checkout -b feature` | Auto-create space on push |
-| **Configuration** | Scattered across files | Unified units in space |
-| **Inheritance** | Git merge complexity | Clean clone from parent |
-| **Preview Deploy** | Complex CI/CD pipeline | Automatic from space |
-| **Rollback** | Git revert + redeploy | Switch space instantly |
-| **Configuration Drift** | Common problem | Spaces are immutable |
-| **Multi-Service** | Coordinate multiple repos | Single space with all units |
+| Aspect | Cased Ephemeral | Our Persistent Spaces | ConfigHub Features Used |
+|--------|-----------------|----------------------|------------------------|
+| **Environment Lifecycle** | Destroyed after merge | Persists, can be reused | Spaces with upstream |
+| **Resource Usage** | Full resources per preview | Optimized via editing | UpdateUnit for limits |
+| **Inheritance** | None, copy everything | Full hierarchy | `--upstream-unit` |
+| **Promotion** | Manual between branches | Automatic propagation | Push-upgrade pattern |
+| **State** | Lost when destroyed | Preserved in ConfigHub | Revision history |
+| **Rollback** | Redeploy old branch | Instant via revisions | Built-in versioning |
+| **Bulk Operations** | Per-branch workflows | Cross-environment | Sets and Filters |
+| **Monitoring** | Starts fresh each time | Continuous with history | Event-driven informers |
 
 ## The Killer Feature Realized
 
@@ -374,16 +390,23 @@ Done!
 - Full resources for every preview (expensive!)
 - No dependency awareness
 
-### Our ConfigHub + DevOps Apps Approach
-- **Spaces provide natural branch isolation**
-- **Clone gives perfect inheritance**
-- **VARIANTS enable resource optimization** (minimal-variant for previews)
-- **FILTERS deploy only changed units** (faster, cheaper)
-- **DEPENDENCIES ensure correct deployment order**
-- **GATES control when previews can be created**
-- **Claude analyzes safety and suggests strategies**
-- **Full programmatic control via SDK**
+### Our ConfigHub + DevOps Apps Approach (Using REAL Features)
+- **Unique prefixes**: `cub space new-prefix` prevents collisions
+- **Upstream/downstream**: Real inheritance model
+- **Resource optimization**: Edit units in place to reduce limits
+- **Filters with WHERE**: Deploy only what matches criteria
+- **Sets for grouping**: Operate on related units together
+- **Push-upgrade**: Automatic propagation through hierarchy
+- **Live State tracking**: Know actual deployment status
+- **Claude integration**: AI-powered safety analysis
+- **Event-driven**: Informers react immediately to changes
 - **Two modes**: Dev (direct) or Enterprise (GitOps)
+
+### ConfigHub Features That Don't Exist (Don't Use):
+- ❌ No "variants" - edit units directly instead
+- ❌ No "dependency graphs" - use Sets and Filters
+- ❌ No "gates" for preview creation - use Labels
+- ❌ No "CloneWithVariant" - clone then edit
 
 ## Implementation Summary
 

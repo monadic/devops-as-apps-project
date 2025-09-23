@@ -1,17 +1,29 @@
 # DevOps as Apps Platform
 
-## Overview
-Building DevOps automation as persistent Kubernetes applications using ConfigHub's actual features.
+## The Big Idea
+**We make every operational concern work like a modern app - continuously verified, persistently running, and able to use AI.**
 
-## Key Documents
-- `docs/CONFIGHUB-ACTUAL-FEATURES.md` - What ConfigHub REALLY does (review this first!)
-- `docs/CONFIGHHUB-DEPLOYMENT-PATTERN.md` - **CRITICAL: How ALL DevOps apps must deploy**
-- `docs/DEVOPS-AS-APPS-MASTER-PLAN.md` - Master implementation plan
-- `docs/DEVOPS-AS-APPS-PLAN.md` - Detailed implementation guide
-- `docs/DEPLOY-FROM-BRANCH-PATTERN.md` - Branch deployment pattern
-- `docs/UPGRADE-MANAGER-USE-CASE.md` - Upgrade management use case
-- `docs/GITOPS-AS-APPS-COMPARISON.md` - GitOps comparison
-- `docs/DEVOPS-AS-APPS-MARKET-STRATEGY.md` - Market positioning
+## Overview
+DevOps tools should be real applications, not just scripts or workflows. We build DevOps automation as persistent Kubernetes applications that run continuously, maintain state, use AI for decisions, and react to events in real-time.
+
+## Start Here
+1. **[docs/README.md](docs/README.md)** - Complete documentation guide
+2. **[docs/EXECUTIVE-SUMMARY.md](docs/EXECUTIVE-SUMMARY.md)** - 5-minute overview
+3. **[docs/DEVOPS-AS-APPS-MASTER-PLAN.md](docs/DEVOPS-AS-APPS-MASTER-PLAN.md)** - Core vision
+
+## Why DevOps as Modern Apps?
+
+### Traditional DevOps (Problems)
+- **Scripts/Workflows**: Run and exit, forget everything
+- **No Intelligence**: Rule-based, can't adapt
+- **Fragmented**: 15+ tools that don't integrate
+- **Reactive**: Wait for triggers or schedules
+
+### DevOps as Apps (Solution)
+- **Modern Applications**: Run continuously like any app
+- **AI-Powered**: Claude provides intelligence
+- **Unified Platform**: One pattern for everything
+- **Event-Driven**: React immediately to changes
 
 ## Quick Start
 1. **Review `docs/CONFIGHUB-ACTUAL-FEATURES.md` first** - understand what's real

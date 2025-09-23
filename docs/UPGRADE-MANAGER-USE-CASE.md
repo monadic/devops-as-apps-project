@@ -1,31 +1,44 @@
-# Upgrade Manager: Yes, This Use Case is Perfect for DevOps as Apps
+# Upgrade Manager: Superior to Chkk's Upgrade Agent
 
-## The Chkk Use Case
+## The Chkk Use Case (Limited Approach)
 
-Chkk provides an "Upgrade Agent" for Claude Code that:
+Chkk provides an "Upgrade Agent" that:
 - Identifies components needing upgrades (EOL, compatibility)
 - Recommends compatible, stable versions (not just latest)
 - Creates environment-specific semantic diffs
 - Generates review-ready PRs
+- **BUT**: Runs as one-time analysis, not continuous monitoring
 
-## How We'd Build This as a DevOps App
+## How We Build It Better: Persistent App with ConfigHub
 
-### The Upgrade Manager App (Enhanced with Sets and Dependencies)
+### Our Advantages:
+| Feature | Chkk Agent | Our Upgrade Manager | ConfigHub Features Used |
+|---------|------------|-------------------|------------------------|
+| **Execution** | One-time scan | Continuous monitoring | Event-driven informers |
+| **State** | Forgets between runs | Tracks upgrade history | ConfigHub revisions |
+| **Propagation** | Manual per environment | Automatic cascade | Push-upgrade pattern |
+| **Rollback** | Redeploy old version | Instant revision switch | Built-in versioning |
+| **Grouping** | Scans everything | Smart Sets | Sets and Filters |
+| **Intelligence** | Rule-based | AI-powered with Claude | Claude + constraints |
+
+### The Upgrade Manager App (Using Canonical Patterns)
 
 ```go
 // upgrade-manager runs continuously as a Kubernetes deployment
 type UpgradeManager struct {
     *sdk.DevOpsApp
-    environment string
-    mode        string // "dev" or "enterprise"
+    projectPrefix string // From 'cub space new-prefix'
+    mode         string  // "dev" or "enterprise"
 }
 
 func main() {
     app := sdk.NewDevOpsApp(sdk.DevOpsAppConfig{
         Name: "upgrade-manager",
-        Environment: os.Getenv("ENV"),
         Mode: os.Getenv("MODE"), // Dev or Enterprise
     })
+
+    // Get unique project prefix (canonical pattern)
+    app.projectPrefix = app.Cub.RunCommand("cub space new-prefix")
 
     // Use informers instead of polling
     app.RunWithInformers(func() error {
@@ -46,11 +59,15 @@ func (u *UpgradeManager) ManageUpgrades() error {
         }
     }
 
-    // 3. Scan each set for upgrade needs
+    // 3. Use canonical filter pattern for targeting
+    filter := u.Cub.GetFilter(u.spaceID, fmt.Sprintf("%s/app", u.projectPrefix))
+
+    // 4. Scan units for upgrade needs using filter
     upgradeNeeded := make(map[string][]ComponentUpgrade)
     for _, set := range sets {
-        // List units in the set
+        // List units using filter AND set
         setUnits := u.Cub.ListUnits(u.spaceID, ListUnitsParams{
+            FilterID: filter.FilterID,
             Where: fmt.Sprintf("SetID = '%s'", set.SetID),
         })
         for _, unit := range setUnits {
@@ -79,22 +96,36 @@ func (u *UpgradeManager) ManageUpgrades() error {
         responseSchema: UpgradePlan{}, // Structured output
     )
 
-    // 5. Execute upgrades using push-upgrade pattern
-
+    // 5. Execute upgrades using canonical patterns
     for setName, upgrades := range upgradeNeeded {
         if len(upgrades) > 0 {
-            // Update units with new versions
-            for _, upgrade := range upgrades {
-                u.Cub.UpdateUnit(upgrade.Unit.UnitID, UpdateUnitRequest{
-                    Data: upgrade.NewConfig,
-                })
-            }
+            // Follow canonical promotion path: qa → staging → prod
+            environments := []string{"qa", "staging", "prod"}
 
-            // Push upgrade to downstream units
-            u.Cub.BulkPatchUnits(BulkPatchParams{
-                Where: fmt.Sprintf("SetID = '%s'", setName),
-                Upgrade: true, // Triggers push-upgrade
-            })
+            for _, env := range environments {
+                space := fmt.Sprintf("%s-%s", u.projectPrefix, env)
+
+                // Set new versions (canonical from global-app)
+                for _, upgrade := range upgrades {
+                    u.Cub.RunCommand("cub run set-image-reference --container-name %s --image-reference %s --space %s",
+                        upgrade.Component, upgrade.NewVersion, space)
+                }
+
+                // Apply to environment
+                u.Cub.RunCommand("cub unit apply --space %s", space)
+
+                // Push-upgrade to downstream (canonical pattern)
+                u.Cub.BulkPatchUnits(BulkPatchParams{
+                    Where: fmt.Sprintf("UpstreamSpace = '%s'", space),
+                    Upgrade: true,
+                })
+
+                // Validate before proceeding
+                if !u.validateUpgrade(space) {
+                    u.rollbackWithConfigHub(space)
+                    break
+                }
+            }
 
             if u.Mode == "dev" {
                 // Dev mode: Direct apply
