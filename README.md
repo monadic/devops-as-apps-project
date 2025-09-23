@@ -43,15 +43,13 @@ DevOps tools should be real applications, not just scripts or workflows. We buil
 - **ApplyGates** - Approval workflows for deployments
 - **Audit Trail** - Complete history of who changed what, when, and why
 
-## ConfigHub Patterns That Work Differently Than Expected
-
-### ✅ Variants DO Exist! (Through Clone + Edit)
+## ConfigHub Variants Through Clone + Edit
 - Create variants by cloning units and editing them
 - Each clone can have different customizations = variants
 - Clone upgrade preserves local changes
 - Example: `aws-prod`, `gcp-prod`, `azure-prod` spaces with different configs
 
-### ❌ What NOT to Use
+### ❌ What NOT to Use (previous sources of confusion)
 - **CloneWithVariant API** - Not a specific operation (use clone + edit instead)
 - **Gates** - Don't exist (no promotion gates, but ApplyGates do exist)
 - **Dependency graphs** - Don't exist (no GetDependencyGraph)
