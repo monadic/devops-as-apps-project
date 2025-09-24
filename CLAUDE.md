@@ -6,6 +6,55 @@ This is a "DevOps as Apps" platform that competes with Cased.com by using persis
 ## Critical Information
 This project uses ConfigHub as its configuration management backend. Many features that might seem obvious DO NOT EXIST in ConfigHub. This file serves as your reference for what's real.
 
+## 🚀 SETUP REQUIREMENTS (DO FIRST)
+
+Before working on this project, Claude must complete these steps:
+
+### 1. GitHub Authentication & ConfigHub Code Review
+✅ **COMPLETED**: Successfully accessed and cloned latest ConfigHub repositories:
+
+**Local cloned repositories** (always use these for latest code):
+- **Main repo**: `/Users/alexisrichardson/github-repos/confighub-latest/`
+- **Documentation**: `/Users/alexisrichardson/github-repos/confighub-docs/`
+- **Examples**: `/Users/alexisrichardson/github-repos/confighub-examples/`
+
+**GitHub URLs** (accessible via git, but may be private via web):
+- **Main repo**: https://github.com/confighubai/confighub
+- **Documentation**: https://github.com/confighubai/docs
+- **Internal examples**: https://github.com/confighubai/examples-internal
+
+**Key Findings from Latest Code Review**:
+- ✅ **Sets confirmed**: `/confighub-latest/internal/models/set.go` - Real feature for grouping units
+- ✅ **Filters confirmed**: `/confighub-latest/internal/models/filter.go` - Real feature with WHERE clauses, WhereData, ResourceType
+- ✅ **CLI commands**: 150+ commands in `/confighub-latest/public/cmd/cub/` including all canonical patterns
+- ✅ **space new-prefix**: Confirmed in `space_new_prefix.go`
+- ✅ **unit push-upgrade**: Confirmed in `unit_push_upgrade.go`
+- ✅ **Examples**: Updated global-app in `/confighub-examples/global-app/` (canonical patterns)
+
+### 2. ConfigHub Authentication & Upgrade
+```bash
+# Authenticate with ConfigHub
+cub auth login
+
+# Upgrade to latest cub CLI version
+cub upgrade
+```
+
+### 3. Claude API Key Setup
+Always prompt the user for their Claude API key:
+```bash
+# Required for AI-powered DevOps apps
+export CLAUDE_API_KEY="your-claude-api-key-here"
+```
+
+### 4. Project Documentation Review
+Review ALL documentation and files in this project folder and subfolders:
+- `/Users/alexisrichardson/github-repos/devops-as-apps-project/`
+- All `docs/` files and subdirectories
+- All example implementations and patterns
+
+**CRITICAL**: Complete steps 1-4 before proceeding with any development work.
+
 ## 🤖 IMPORTANT: Claude AI Integration (Updated 2025-09-23)
 
 **All DevOps examples now require Claude AI by default** for intelligent analysis:
@@ -54,7 +103,8 @@ See `docs/CONFIGHHUB-DEPLOYMENT-PATTERN.md` for details.
 ## How to Continue This Project
 
 ### Step 1: Read Canonical Global-App Implementation (CRITICAL)
-- **Global-app**: `/Users/alexisrichardson/examples-internal/global-app/`
+- **Global-app (Latest)**: `/Users/alexisrichardson/github-repos/confighub-examples/global-app/`
+  - **Backup reference**: `/Users/alexisrichardson/examples-internal/global-app/`
   - This is the CANONICAL reference for all ConfigHub patterns
   - Study `bin/install-base`, `bin/install-envs`, `bin/new-app-env`
   - Uses `cub space new-prefix` for unique naming
@@ -72,13 +122,15 @@ See `docs/CONFIGHHUB-DEPLOYMENT-PATTERN.md` for details.
 | **Bulk Operations** | Single workflow | Sets/Filters across environments |
 
 ### Step 3: Read ConfigHub Source Code
-- **ConfigHub repo**: `/Users/alexisrichardson/github-repos/confighub/`
+- **ConfigHub repo (Latest)**: `/Users/alexisrichardson/github-repos/confighub-latest/`
+- **Backup repo**: `/Users/alexisrichardson/github-repos/confighub/`
 - **Key files to read**:
   - `internal/models/set.go` - Understand Sets (REAL feature)
-  - `internal/models/filter.go` - Understand Filters (REAL feature)
-  - `internal/views/set.go` - Set operations
+  - `internal/models/filter.go` - Understand Filters (REAL feature with WHERE clauses)
+  - `internal/models/unit.go` - Unit operations and relationships
+  - `public/cmd/cub/` - All 150+ CLI commands
   - `public/openapi/goclient-new/models.gen.go` - API types
-- **Search patterns**: `grep -r "BulkPatch" /Users/alexisrichardson/github-repos/confighub/`
+- **Search patterns**: `grep -r "BulkPatch" /Users/alexisrichardson/github-repos/confighub-latest/`
 
 ### Step 4: Canonical ConfigHub Commands (from global-app)
 ```bash
@@ -133,14 +185,6 @@ These are the ONLY features that actually exist:
 - **Apply/Destroy** - Deploy and remove configurations
 - **Live State** - Read-only deployment status
 
-## HALLUCINATED Features ❌
-DO NOT USE these - they don't exist:
-- **Variants** - No aws-variant, gcp-variant functionality
-- **Gates** - No promotion gates between environments
-- **Dependency graphs** - No GetDependencyGraph() API
-- **UpdateStatus** - Cannot update live status
-- **CloneWithVariant** - This operation doesn't exist
-- **UpgradeSet** - Use push-upgrade pattern instead
 
 ## Canonical Patterns (from global-app)
 
