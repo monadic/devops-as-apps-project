@@ -85,20 +85,46 @@ ENABLE_CLAUDE=false ./run.sh
 - Easy disable option via ENABLE_CLAUDE=false
 - Fallback to basic analysis when disabled
 
-## 🚨 CRITICAL: ConfigHub Self-Deployment Pattern
+## 🚨 CRITICAL: ConfigHub-Only Commands (NO kubectl!)
 
-**ALL DevOps apps MUST deploy themselves through ConfigHub units**, not kubectl:
+### **MANDATORY REQUIREMENT**: ALL DevOps apps MUST use ConfigHub commands EXCLUSIVELY
+
+**ConfigHub is the SINGLE SOURCE OF TRUTH** - All configuration changes, drift corrections, and deployments MUST go through ConfigHub. Direct kubectl commands are PROHIBITED in production code.
+
+### Drift Correction Pattern (REQUIRED)
 ```bash
-# CORRECT way (ConfigHub-driven):
+# ✅ CORRECT - Use ConfigHub to fix drift
+cub unit update backend-api-unit --patch --data '{"spec":{"replicas":3}}'
+cub unit apply backend-api-unit --space drift-test-demo
+
+# ❌ WRONG - NEVER use kubectl for corrections
+kubectl scale deployment backend-api --replicas=3  # PROHIBITED!
+```
+
+### Self-Deployment Pattern (REQUIRED)
+```bash
+# ✅ CORRECT - ConfigHub-driven deployment
 bin/install-base      # Creates units in ConfigHub
 bin/install-envs      # Sets up env hierarchy
 bin/apply-all dev     # Deploys via ConfigHub
 
-# WRONG way (don't do this):
-kubectl apply -f k8s/
+# ❌ WRONG - Direct Kubernetes deployment
+kubectl apply -f k8s/  # PROHIBITED!
 ```
 
-See `docs/CONFIGHHUB-DEPLOYMENT-PATTERN.md` for details.
+### Why ConfigHub Commands Only:
+1. **Single Source of Truth**: ConfigHub maintains desired state
+2. **Audit Trail**: All changes tracked in ConfigHub history
+3. **Environment Hierarchy**: Changes propagate via push-upgrade
+4. **Drift Prevention**: ConfigHub state always matches intent
+5. **GitOps Ready**: ConfigHub can trigger Git commits for Flux/Argo
+
+### Required in All Apps:
+- Drift Detector: MUST recommend `cub unit` commands only
+- Cost Optimizer: MUST apply optimizations via ConfigHub
+- All Future Apps: MUST interact exclusively through ConfigHub API
+
+See `docs/CONFIGHHUB-DEPLOYMENT-PATTERN.md` for implementation details.
 
 ## How to Continue This Project
 
@@ -282,6 +308,14 @@ kubectl apply -f k8s/  # Wrong! Bypasses ConfigHub
 ```
 
 ## Testing Commands & Principles
+
+### **CRITICAL Testing Requirement: Validate ConfigHub-Only Commands**
+All tests MUST verify that apps use ConfigHub commands exclusively:
+```bash
+# Required test patterns in all test suites
+test_api "Uses cub commands" '.corrections[0].command | contains("cub unit")' "true"
+test_api "NO kubectl commands" '.corrections[0].command | contains("kubectl")' "false"
+```
 
 ### **Standard Testing Protocol**
 Always follow this 2-step testing approach:
