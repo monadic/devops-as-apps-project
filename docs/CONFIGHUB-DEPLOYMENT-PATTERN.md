@@ -69,6 +69,113 @@ app-name-filters                   # Filters for targeting
 app-name                          # Main space for sets/metadata
 ```
 
+## ⚠️ CRITICAL: Worker Setup with --include-secret
+
+**IMPORTANT**: When setting up ConfigHub workers, you MUST use the `--include-secret` flag to generate unique authentication credentials for each worker.
+
+### The Issue
+
+If you create multiple workers without `--include-secret`:
+- Workers reuse existing `confighub-worker-env` secret
+- New workers get WRONG credentials (from the first worker)
+- Workers fail with: `[ERROR] Failed to get bridge worker slug: server returned status 404`
+- Cannot connect or deploy units
+
+### Correct Worker Setup Pattern
+
+Every `bin/setup-worker` script MUST use this pattern:
+
+```bash
+#!/bin/bash
+set -e
+
+PROJECT=$(cat .cub-project)
+SPACE="$PROJECT-base"
+WORKER_NAME="devops-test-worker"
+
+# Create confighub namespace
+kubectl create namespace confighub --dry-run=client -o yaml | kubectl apply -f -
+
+# Create worker in ConfigHub
+if ! cub worker list --space $SPACE 2>/dev/null | grep -q $WORKER_NAME; then
+    cub worker create $WORKER_NAME --space $SPACE
+fi
+
+# ⚠️ CRITICAL: Use --include-secret to generate unique credentials!
+cub worker install $WORKER_NAME \
+    --namespace confighub \
+    --space $SPACE \
+    --include-secret \
+    --export > /tmp/worker-manifest.yaml
+
+# Apply to cluster (includes deployment AND secret with correct credentials)
+kubectl apply -f /tmp/worker-manifest.yaml
+
+# Wait and verify
+sleep 10
+cub worker list --space $SPACE  # Should show: Condition=Ready
+cub target list --space $SPACE  # Should show: k8s-<worker-name>
+```
+
+### What `--include-secret` Does
+
+**Without `--include-secret`:**
+```bash
+cub worker install my-worker --export > worker.yaml
+# Generates:
+# - Deployment (references secret "confighub-worker-env")
+# ❌ NO secret manifest
+# ❌ Uses existing secret with WRONG worker credentials
+```
+
+**With `--include-secret`:**
+```bash
+cub worker install my-worker --include-secret --export > worker.yaml
+# Generates:
+# - Secret with CORRECT CONFIGHUB_WORKER_SECRET for THIS worker
+# - Deployment (references the secret)
+# ✅ Worker gets proper authentication
+# ✅ Connects successfully
+```
+
+### Verification
+
+After running `bin/setup-worker`, verify:
+
+```bash
+# 1. Worker shows as Ready
+$ cub worker list --space your-space
+NAME           CONDITION    SPACE        LAST-SEEN
+your-worker    Ready        your-space   2025-10-01 18:31:55  ✅
+
+# 2. Target was auto-created
+$ cub target list --space your-space
+NAME              WORKER        PROVIDERTYPE    PARAMETERS
+k8s-your-worker   your-worker   Kubernetes      {"WaitTimeout":"2m0s"}  ✅
+
+# 3. Worker pod is running
+$ kubectl get pods -n confighub
+NAME                         READY   STATUS    RESTARTS   AGE
+your-worker-xxx-yyy          1/1     Running   0          2m  ✅
+
+# 4. Worker logs show success
+$ kubectl logs -n confighub -l app=your-worker --tail=5
+[INFO] Successfully connected to event stream in 375ms, status: 200 200 OK  ✅
+```
+
+### Troubleshooting
+
+**Worker shows "Disconnected" or 404 error?**
+1. Delete the broken worker: `kubectl delete deployment <worker-name> -n confighub`
+2. Recreate with `--include-secret`:
+   ```bash
+   cub worker install <worker-name> --space <space> --include-secret --export > worker.yaml
+   kubectl apply -f worker.yaml
+   ```
+3. Verify: `cub worker list --space <space>` should show `Condition=Ready`
+
+**For detailed troubleshooting**, see `/devops-examples/WORKER-SETUP.md`.
+
 ## Implementation Guide
 
 ### Step 1: Create Base Kubernetes Manifests
