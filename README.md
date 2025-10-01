@@ -38,26 +38,30 @@ Traditional DevOps tools are scripts or ephemeral workflows that run and exit. *
 # 1. Install prerequisites
 brew install confighubai/tap/cub  # ConfigHub CLI
 cub auth login                     # Authenticate
+kind create cluster --name devops-test  # Or use existing cluster
 
-# 2. Pick an example
-cd examples/drift-detector/        # or cost-optimizer/
+# 2. Pick an example (see https://github.com/monadic/devops-examples)
+cd devops-examples/drift-detector/  # or cost-optimizer/
 
-# 3. Set up ConfigHub structure
-bin/install-base                   # Create unique prefix, spaces, filters
-bin/install-envs                   # Create environment hierarchy
+# 3. Deploy via ConfigHub
+bin/install-base                   # Create ConfigHub structure
+bin/setup-worker                   # Install ConfigHub worker
+bin/apply-base                     # Deploy to Kubernetes
+bin/test-workflow                  # Validate everything works
 
-# 4. Deploy and explore
-bin/apply-all dev                  # Deploy via ConfigHub
-# Then follow scenario tasks in the example's README.md
+# 4. See the app in action
+kubectl get all -n devops-apps     # Check deployment
+# Then follow the QUICKSTART.md in each example
 ```
 
 ## 📚 Documentation
 
 ### For Getting Started
 
-- **[Examples](examples/)** - Hands-on, scenario-driven guides
-  - [Drift Detector](examples/drift-detector/) - Auto-correct configuration drift
-  - [Cost Optimizer](examples/cost-optimizer/) - AI-powered cost reduction
+- **[DevOps Examples Repository](https://github.com/monadic/devops-examples)** - Production-ready examples
+  - [Drift Detector](https://github.com/monadic/devops-examples/tree/main/drift-detector) - Auto-correct configuration drift
+  - [Cost Optimizer](https://github.com/monadic/devops-examples/tree/main/cost-optimizer) - AI-powered cost reduction
+  - [Cost Impact Monitor](https://github.com/monadic/devops-examples/tree/main/cost-impact-monitor) - Pre-deployment cost analysis
 
 ### For Understanding Patterns
 
@@ -77,9 +81,10 @@ bin/apply-all dev                  # Deploy via ConfigHub
 Continuous drift detection with auto-correction:
 
 ```bash
-cd examples/drift-detector/
-bin/install-base && bin/install-envs
-bin/apply-all dev
+cd devops-examples/drift-detector/
+bin/install-base     # Create ConfigHub structure
+bin/setup-worker     # Install worker
+bin/apply-base       # Deploy to Kubernetes
 
 # Deploy test workloads with drift
 bin/deploy-test --with-drift
@@ -90,10 +95,12 @@ kubectl logs -n devops-apps -l app=drift-detector --follow
 
 **What it shows:**
 - ConfigHub Sets and Filters for targeting
+- Worker-based deployment via `cub unit apply`
 - Push-upgrade for multi-environment fixes
-- Changesets for atomic bulk corrections
 - Claude AI drift pattern analysis
 - Real-time dashboard on :8080
+
+See [QUICKSTART.md](https://github.com/monadic/devops-examples/blob/main/drift-detector/QUICKSTART.md) for full guide.
 
 ---
 
@@ -102,36 +109,36 @@ kubectl logs -n devops-apps -l app=drift-detector --follow
 AI-powered cost optimization:
 
 ```bash
-cd examples/cost-optimizer/
-bin/install-base && bin/install-envs
-bin/apply-all dev
-
-# Deploy over-provisioned workloads
-bin/deploy-test-workloads
+cd devops-examples/cost-optimizer/
+bin/install-base     # Create ConfigHub structure
+bin/setup-worker     # Install worker
+bin/apply-base       # Deploy to Kubernetes
 
 # View AI recommendations
-kubectl port-forward -n devops-apps svc/cost-optimizer 8081:8081
+kubectl port-forward -n cost-optimizer svc/cost-optimizer 8081:8081
 # Open http://localhost:8081
 ```
 
 **What it shows:**
 - Claude AI cost recommendations
-- Store optimizations as ConfigHub units
-- Promote optimizations dev → staging → prod
-- Lateral promotion for region-specific opts
+- Worker-based deployment workflow
 - OpenCost integration for accurate billing
 - Real-time dashboard on :8081
+- Metrics server integration
+
+See [QUICKSTART.md](https://github.com/monadic/devops-examples/blob/main/cost-optimizer/QUICKSTART.md) for full guide.
 
 ## 📖 Learning Path
 
 **New to this project?** Follow this order:
 
 1. **[Quick Start](#quick-start)** (5 min) - Get running
-2. **[Drift Detector Example](examples/drift-detector/)** (30 min) - Core patterns
-3. **[Canonical Patterns](docs/CANONICAL-PATTERNS-SUMMARY.md)** (15 min) - Understand the patterns
-4. **[Cost Optimizer Example](examples/cost-optimizer/)** (35 min) - Advanced AI integration
-5. **[Master Plan](docs/DEVOPS-AS-APPS-MASTER-PLAN.md)** (20 min) - Full architecture
-6. **Build your own** - Apply patterns to your use case
+2. **[Drift Detector QUICKSTART](https://github.com/monadic/devops-examples/blob/main/drift-detector/QUICKSTART.md)** (20 min) - Step-by-step deployment
+3. **[ConfigHub Workflow](https://github.com/monadic/devops-examples/blob/main/drift-detector/WORKFLOW.md)** (15 min) - Understand the workflow
+4. **[Canonical Patterns](docs/CANONICAL-PATTERNS-SUMMARY.md)** (15 min) - Understand the patterns
+5. **[Cost Optimizer Example](https://github.com/monadic/devops-examples/tree/main/cost-optimizer)** (30 min) - Advanced AI integration
+6. **[Master Plan](docs/DEVOPS-AS-APPS-MASTER-PLAN.md)** (20 min) - Full architecture
+7. **Build your own** - Apply patterns to your use case
 
 ## 🔑 Core Concepts
 
@@ -154,16 +161,21 @@ See [CANONICAL-PATTERNS-SUMMARY.md](docs/CANONICAL-PATTERNS-SUMMARY.md) for deta
 
 ### DevOps App Structure
 
-Every app follows this structure:
+Every app follows this standardized structure:
 
 ```
 app-name/
-├── README.md                    # Scenario-driven guide
+├── README.md                    # Architecture and features
+├── QUICKSTART.md               # Step-by-step setup guide
+├── WORKFLOW.md                 # ConfigHub workflow explanation
 ├── bin/
 │   ├── install-base            # Create ConfigHub structure
-│   ├── install-envs            # Set up environment hierarchy
-│   ├── apply-all               # Deploy via ConfigHub
-│   ├── promote                 # Push-upgrade pattern
+│   ├── setup-worker            # Install ConfigHub worker
+│   ├── apply-base              # Set targets and apply units
+│   ├── test-workflow           # Validate deployment
+│   ├── install-envs            # Set up env hierarchy (optional)
+│   ├── apply-all               # Deploy to specific env (optional)
+│   ├── promote                 # Push-upgrade pattern (optional)
 │   └── proj                    # Get project name
 ├── confighub/
 │   └── base/
@@ -174,6 +186,12 @@ app-name/
 ├── main.go                     # Application code
 └── go.mod                      # Go module
 ```
+
+**Common workflow:**
+1. `bin/install-base` - Create spaces, filters, and units in ConfigHub
+2. `bin/setup-worker` - Install worker that executes `cub unit apply`
+3. `bin/apply-base` - Set targets and deploy to Kubernetes
+4. `bin/test-workflow` - Validate everything works
 
 ## 🛠️ Prerequisites
 
@@ -192,15 +210,10 @@ app-name/
 
 ## 📦 What's Included
 
+### This Repository (Planning & Documentation)
 ```
 devops-as-apps-project/
 ├── README.md                                    # This file
-├── examples/
-│   ├── README.md                               # Examples index
-│   ├── drift-detector/
-│   │   └── README.md                           # Scenario-driven guide
-│   └── cost-optimizer/
-│       └── README.md                           # Scenario-driven guide
 └── docs/
     ├── CANONICAL-PATTERNS-SUMMARY.md           # 12 must-follow patterns
     ├── CONFIGHUB-ACTUAL-FEATURES.md            # API reference
@@ -208,6 +221,30 @@ devops-as-apps-project/
     ├── DEVOPS-AS-APPS-MASTER-PLAN.md          # Architecture & vision
     └── COMPETITIVE-ADVANTAGES.md               # Why this approach wins
 ```
+
+### DevOps Examples Repository (Production Code)
+
+See [monadic/devops-examples](https://github.com/monadic/devops-examples) for production-ready implementations:
+
+```
+devops-examples/
+├── drift-detector/              # Continuous drift detection
+│   ├── QUICKSTART.md           # Step-by-step setup
+│   ├── WORKFLOW.md             # ConfigHub workflow
+│   └── bin/                    # Deployment scripts
+├── cost-optimizer/             # AI-powered cost optimization
+│   ├── QUICKSTART.md           # Step-by-step setup
+│   ├── WORKFLOW.md             # ConfigHub workflow
+│   └── bin/                    # Deployment scripts
+└── cost-impact-monitor/        # Pre-deployment cost analysis
+    ├── QUICKSTART.md           # Step-by-step setup
+    ├── WORKFLOW.md             # ConfigHub workflow
+    └── bin/                    # Deployment scripts
+```
+
+### DevOps SDK Repository (Reusable Library)
+
+See [monadic/devops-sdk](https://github.com/monadic/devops-sdk) for the Go SDK used by all examples.
 
 ## 🎓 Key Takeaways
 

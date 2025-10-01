@@ -16,8 +16,13 @@ kubectl apply -f k8s/rbac.yaml
 ### ✅ New Way (ConfigHub-Driven)
 ```bash
 bin/install-base      # Create units in ConfigHub
+bin/setup-worker      # Install ConfigHub worker to execute applies
+bin/apply-base        # Deploy via ConfigHub worker
+bin/test-workflow     # Validate everything works
+
+# For multi-environment (optional):
 bin/install-envs      # Set up env hierarchy (dev → staging → prod)
-bin/apply-all dev     # Deploy via ConfigHub
+bin/apply-all dev     # Deploy to dev
 bin/promote dev staging  # Promote with push-upgrade
 ```
 
@@ -35,14 +40,19 @@ app-name/
 │       └── app-rbac.yaml           # RBAC configuration
 ├── bin/
 │   ├── install-base                # Creates ConfigHub units
-│   ├── install-envs                # Creates env hierarchy
-│   ├── apply-all [env]             # Applies to K8s via ConfigHub
-│   ├── promote [from] [to]         # Promotes between envs
+│   ├── setup-worker                # Installs ConfigHub worker
+│   ├── apply-base                  # Sets targets and applies units
+│   ├── test-workflow               # Validates deployment
+│   ├── install-envs                # Creates env hierarchy (optional)
+│   ├── apply-all [env]             # Applies to specific env (optional)
+│   ├── promote [from] [to]         # Promotes between envs (optional)
 │   ├── cleanup                     # Removes all resources
 │   └── proj                        # Gets project name
 ├── main.go                         # App implementation
 ├── go.mod                          # Go module
-└── README.md                       # Must include ConfigHub deployment
+├── README.md                       # Architecture and features
+├── QUICKSTART.md                   # Step-by-step setup guide
+└── WORKFLOW.md                     # ConfigHub → Kubernetes workflow
 ```
 
 ## ConfigHub Space Hierarchy
