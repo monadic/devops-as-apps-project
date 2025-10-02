@@ -2,7 +2,11 @@
 
 **Build, Manage and Operate modern applications with ConfigHub** 
 
-In this repo you will find example apps for ConfigHub.  All of the apps are based on the [ConfigHub "Global App" pattern](https://github.com/confighub/examples/blob/main/global-app/README.md) which enables a set of microservice components to be deployed across stages and regions, and then kept in operation.  You should consider everything here to be experimental -- we are seeking your feedback on the application model and deployment flow.  Our aspiration is that production grade apps are easy to build and deploy anywhere, using this model, then easily cloned, customised, combined or otherwise adapted simply by operating on configurations.
+In this repo you will find example apps for ConfigHub.  All of the apps are based on the [ConfigHub "Global App" pattern](https://github.com/confighub/examples/blob/main/global-app/README.md) which enables a set of microservice components to be deployed across stages and regions, and then kept in operation.  
+
+You should consider everything here to be experimental -- we are seeking your feedback on the application model and deployment flow.  Our aspiration is that production grade apps are easy to build and deploy anywhere, using this model, then easily cloned, customised, combined or otherwise adapted simply by operating on configurations.
+
+In addition we are experimenting with combinations of ConfigHub's automation model and AI agents -- towards AI Native Ops.
 
 Our main tools are:
 - **ConfigHub** to manage configurations, custom versions, and operational changes 
