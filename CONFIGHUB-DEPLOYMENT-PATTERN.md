@@ -1,5 +1,7 @@
 # ConfigHub Deployment Pattern for DevOps Apps
 
+This file created by Claude as a reference for correct patterns for dpeloying apps using workers.
+
 ## Executive Summary
 
 Following the global-app pattern, **ALL DevOps apps must deploy themselves through ConfigHub units**, not traditional kubectl/YAML files. This ensures consistency, enables environment management, and demonstrates that DevOps tools are first-class applications.
