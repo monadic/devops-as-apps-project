@@ -4,7 +4,7 @@
 
 This document summarizes the canonical patterns from the global-app reference implementation that ALL DevOps apps must follow.
 
-## Key Takeaways
+## Top 10 Requirements
 
 1. **ALWAYS** use `cub space new-prefix` for unique naming
 2. **ALWAYS** use the ConfigHub unit model and cub CLI for managaing config
