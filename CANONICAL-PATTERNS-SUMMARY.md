@@ -7,7 +7,7 @@ This document summarizes the canonical patterns from the global-app reference im
 ## Top 10 Requirements
 
 1. **ALWAYS** use `cub space new-prefix` for unique naming
-2. **ALWAYS** use the ConfigHub unit model and cub CLI for managaing config
+2. **ALWAYS** use the ConfigHub unit model and cub CLI for managing config
 3. **ALWAYS** follow the global-app model for app structure, use of CLI, scripts -- see [HERE](https://github.com/monadic/devops-as-apps-project/blob/main/CONFIGHUB-DEPLOYMENT-PATTERN.md)
 4. **ALWAYS** create environment hierarchy with upstream/downstream
 5. **ALWAYS** use informers, not polling
@@ -327,12 +327,5 @@ func main() {
 4. **compliance-auditor**: Continuous compliance with drift detection
 5. **upgrade-manager**: Intelligent version management across environments
 6. **branch-deployer**: Better than Cased's "killer branch deploy"
-
-## References
-
-- **Canonical Implementation**: `/Users/alexisrichardson/examples-internal/global-app/`
-- **ConfigHub Source**: `/Users/alexisrichardson/github-repos/confighub/`
-- **Our SDK**: `/Users/alexisrichardson/github-repos/devops-sdk/`
-- **Example Apps**: `/Users/alexisrichardson/github-repos/devops-examples/`
 
 This is the definitive guide. When in doubt, follow the global-app patterns exactly.
