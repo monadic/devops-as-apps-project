@@ -2,8 +2,9 @@
 
 **Build, Manage and Operate modern applications with ConfigHub** 
 
-We provide a toolkit of example apps that are built using:
+We provide an experimental toolkit of example apps for ConfigHub.  In this repo we are exploring the [ConfigHub "Global App" pattern](https://github.com/confighub/examples/blob/main/global-app/README.md) which enables a set of microservice components to be deployed across stages and regions, and then kept in operation.
 
+Our main tools are:
 - **ConfigHub** to manage configurations, custom versions, and operational changes 
 - **Kubernetes** for continuously running, event-driven and stateful applications
 - **Claude AI** for intelligent decision-making agents
@@ -186,6 +187,7 @@ app-name/
 - **[ConfigHub SDK extension libary](https://github.com/monadic/devops-sdk)** - some SDK addons 
 - **[ConfigHub Actual Features](CONFIGHUB-ACTUAL-FEATURES.md)** - API notes (created by Claude)
 
+This repository contains the core documentation for the ConfigHub pattern.  The examples are in a separate repo: [monadic/devops-examples](https://github.com/monadic/devops-examples).
 
 ## 🛠️ Prerequisites
 
@@ -202,34 +204,18 @@ app-name/
 - **Claude API key** - For AI features ([get one](https://console.anthropic.com))
 - **OpenCost** - For accurate cloud billing (cost-optimizer example)
 
-## 📦 What's Included
-
-### This Repository (Planning & Documentation)
-```
-devops-as-apps-project/
-├── README.md                            # This file
-├── CANONICAL-PATTERNS-SUMMARY.md       # 12 must-follow patterns
-├── CONFIGHUB-ACTUAL-FEATURES.md        # API reference
-├── CONFIGHUB-DEPLOYMENT-PATTERN.md     # Deployment guide
-└── CLAUDE.md                           # AI assistant context
-```
-
-### DevOps Examples Repository (Production Code)
-
-See [monadic/devops-examples](https://github.com/monadic/devops-examples) for production-ready implementations:
-
-```
-devops-examples/
-├── drift-detector/              # Continuous drift detection
-├── cost-optimizer/             # AI-powered cost optimization
-└── cost-impact-monitor/        # Pre-deployment cost analysis
-```
-
 ### DevOps SDK Repository (Reusable Library)
 
-See [monadic/devops-sdk](https://github.com/monadic/devops-sdk) for the Go SDK used by all examples.
+See [monadic/devops-sdk](https://github.com/monadic/devops-sdk) for the Go SDK used by all examples, and [confighub/sdk](https://github.com/confighub/sdk) for the main ConfigHub SDK.
 
-## 🎓 Key Takeaways (accordingt to Claude)
+## 📞 Getting Help
+
+- **ConfigHub**: [docs.confighub.com](https://docs.confighub.com)
+- **Claude API**: [docs.anthropic.com](https://docs.anthropic.com)
+- **Kubernetes**: [kubernetes.io/docs](https://kubernetes.io/docs)
+- **Examples**: See each example's Troubleshooting section
+
+## 🎓 Key Takeaways (according to Claude)
 
 ### For Platform Engineers
 
@@ -254,13 +240,6 @@ See [monadic/devops-sdk](https://github.com/monadic/devops-sdk) for the Go SDK u
 - **Observable** - Built-in dashboards and metrics
 - **Scalable** - Horizontal scaling, HA, zero downtime
 - **Extensible** - Full source control, easy to customize
-
-## 📞 Getting Help
-
-- **ConfigHub**: [docs.confighub.com](https://docs.confighub.com)
-- **Claude API**: [docs.anthropic.com](https://docs.anthropic.com)
-- **Kubernetes**: [kubernetes.io/docs](https://kubernetes.io/docs)
-- **Examples**: See each example's Troubleshooting section
 
 ## 🤝 Contributing
 
