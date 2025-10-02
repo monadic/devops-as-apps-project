@@ -65,14 +65,9 @@ kubectl get all -n devops-apps     # Check deployment
 
 ### For Understanding Patterns
 
-- **[Canonical Patterns Summary](docs/CANONICAL-PATTERNS-SUMMARY.md)** - 12 patterns you MUST follow
-- **[ConfigHub Deployment Pattern](docs/CONFIGHUB-DEPLOYMENT-PATTERN.md)** - How to deploy apps via ConfigHub
-- **[ConfigHub Actual Features](docs/CONFIGHUB-ACTUAL-FEATURES.md)** - API reference (what's real vs hallucinated)
-
-### For Architecture & Design
-
-- **[Master Plan](docs/DEVOPS-AS-APPS-MASTER-PLAN.md)** - High-level architecture and vision
-- **[Competitive Advantages](docs/COMPETITIVE-ADVANTAGES.md)** - Why this beats traditional approaches
+- **[Canonical Patterns Summary](CANONICAL-PATTERNS-SUMMARY.md)** - 12 patterns you MUST follow
+- **[ConfigHub Deployment Pattern](CONFIGHUB-DEPLOYMENT-PATTERN.md)** - How to deploy apps via ConfigHub
+- **[ConfigHub Actual Features](CONFIGHUB-ACTUAL-FEATURES.md)** - API reference (what's real vs hallucinated)
 
 ## 🎯 Live Examples
 
@@ -100,7 +95,7 @@ kubectl logs -n devops-apps -l app=drift-detector --follow
 - Claude AI drift pattern analysis
 - Real-time dashboard on :8080
 
-See [QUICKSTART.md](https://github.com/monadic/devops-examples/blob/main/drift-detector/QUICKSTART.md) for full guide.
+See the [drift-detector README](https://github.com/monadic/devops-examples/tree/main/drift-detector) for full guide.
 
 ---
 
@@ -126,19 +121,17 @@ kubectl port-forward -n cost-optimizer svc/cost-optimizer 8081:8081
 - Real-time dashboard on :8081
 - Metrics server integration
 
-See [QUICKSTART.md](https://github.com/monadic/devops-examples/blob/main/cost-optimizer/QUICKSTART.md) for full guide.
+See the [cost-optimizer README](https://github.com/monadic/devops-examples/tree/main/cost-optimizer) for full guide.
 
 ## 📖 Learning Path
 
 **New to this project?** Follow this order:
 
 1. **[Quick Start](#quick-start)** (5 min) - Get running
-2. **[Drift Detector QUICKSTART](https://github.com/monadic/devops-examples/blob/main/drift-detector/QUICKSTART.md)** (20 min) - Step-by-step deployment
-3. **[ConfigHub Workflow](https://github.com/monadic/devops-examples/blob/main/drift-detector/WORKFLOW.md)** (15 min) - Understand the workflow
-4. **[Canonical Patterns](docs/CANONICAL-PATTERNS-SUMMARY.md)** (15 min) - Understand the patterns
-5. **[Cost Optimizer Example](https://github.com/monadic/devops-examples/tree/main/cost-optimizer)** (30 min) - Advanced AI integration
-6. **[Master Plan](docs/DEVOPS-AS-APPS-MASTER-PLAN.md)** (20 min) - Full architecture
-7. **Build your own** - Apply patterns to your use case
+2. **[Drift Detector](https://github.com/monadic/devops-examples/tree/main/drift-detector)** (20 min) - Step-by-step deployment
+3. **[Canonical Patterns](CANONICAL-PATTERNS-SUMMARY.md)** (15 min) - Understand the patterns
+4. **[Cost Optimizer](https://github.com/monadic/devops-examples/tree/main/cost-optimizer)** (30 min) - Advanced AI integration
+5. **Build your own** - Apply patterns to your use case
 
 ## 🔑 Core Concepts
 
@@ -157,7 +150,7 @@ All examples follow these patterns from the global-app reference:
 9. **ConfigHub Functions** - `cub run` for common operations
 10. **Links** - Connect app units to infrastructure
 
-See [CANONICAL-PATTERNS-SUMMARY.md](docs/CANONICAL-PATTERNS-SUMMARY.md) for details.
+See [CANONICAL-PATTERNS-SUMMARY.md](CANONICAL-PATTERNS-SUMMARY.md) for details.
 
 ### DevOps App Structure
 
@@ -166,8 +159,6 @@ Every app follows this standardized structure:
 ```
 app-name/
 ├── README.md                    # Architecture and features
-├── QUICKSTART.md               # Step-by-step setup guide
-├── WORKFLOW.md                 # ConfigHub workflow explanation
 ├── bin/
 │   ├── install-base            # Create ConfigHub structure
 │   ├── setup-worker            # Install ConfigHub worker
@@ -213,13 +204,11 @@ app-name/
 ### This Repository (Planning & Documentation)
 ```
 devops-as-apps-project/
-├── README.md                                    # This file
-└── docs/
-    ├── CANONICAL-PATTERNS-SUMMARY.md           # 12 must-follow patterns
-    ├── CONFIGHUB-ACTUAL-FEATURES.md            # API reference
-    ├── CONFIGHUB-DEPLOYMENT-PATTERN.md         # Deployment guide
-    ├── DEVOPS-AS-APPS-MASTER-PLAN.md          # Architecture & vision
-    └── COMPETITIVE-ADVANTAGES.md               # Why this approach wins
+├── README.md                            # This file
+├── CANONICAL-PATTERNS-SUMMARY.md       # 12 must-follow patterns
+├── CONFIGHUB-ACTUAL-FEATURES.md        # API reference
+├── CONFIGHUB-DEPLOYMENT-PATTERN.md     # Deployment guide
+└── CLAUDE.md                           # AI assistant context
 ```
 
 ### DevOps Examples Repository (Production Code)
@@ -229,17 +218,8 @@ See [monadic/devops-examples](https://github.com/monadic/devops-examples) for pr
 ```
 devops-examples/
 ├── drift-detector/              # Continuous drift detection
-│   ├── QUICKSTART.md           # Step-by-step setup
-│   ├── WORKFLOW.md             # ConfigHub workflow
-│   └── bin/                    # Deployment scripts
 ├── cost-optimizer/             # AI-powered cost optimization
-│   ├── QUICKSTART.md           # Step-by-step setup
-│   ├── WORKFLOW.md             # ConfigHub workflow
-│   └── bin/                    # Deployment scripts
 └── cost-impact-monitor/        # Pre-deployment cost analysis
-    ├── QUICKSTART.md           # Step-by-step setup
-    ├── WORKFLOW.md             # ConfigHub workflow
-    └── bin/                    # Deployment scripts
 ```
 
 ### DevOps SDK Repository (Reusable Library)
@@ -274,11 +254,10 @@ See [monadic/devops-sdk](https://github.com/monadic/devops-sdk) for the Go SDK u
 
 ## 🚀 Next Steps
 
-1. **Try an example** - Start with [Drift Detector](examples/drift-detector/)
-2. **Read the patterns** - [Canonical Patterns](docs/CANONICAL-PATTERNS-SUMMARY.md)
-3. **Understand ConfigHub** - [Actual Features](docs/CONFIGHUB-ACTUAL-FEATURES.md)
-4. **Review architecture** - [Master Plan](docs/DEVOPS-AS-APPS-MASTER-PLAN.md)
-5. **Build your own** - Apply patterns to your use case
+1. **Try an example** - Start with [Drift Detector](https://github.com/monadic/devops-examples/tree/main/drift-detector)
+2. **Read the patterns** - [Canonical Patterns](CANONICAL-PATTERNS-SUMMARY.md)
+3. **Understand ConfigHub** - [Actual Features](CONFIGHUB-ACTUAL-FEATURES.md)
+4. **Build your own** - Apply patterns to your use case
 
 ## 📞 Getting Help
 
@@ -291,13 +270,10 @@ See [monadic/devops-sdk](https://github.com/monadic/devops-sdk) for the Go SDK u
 
 To add a new DevOps app example:
 
-1. Copy structure from drift-detector or cost-optimizer
+1. Copy structure from drift-detector or cost-optimizer in [devops-examples](https://github.com/monadic/devops-examples)
 2. Follow the global-app README pattern
-3. Use all 12 canonical ConfigHub patterns
+3. Use all 12 canonical ConfigHub patterns from [CANONICAL-PATTERNS-SUMMARY.md](CANONICAL-PATTERNS-SUMMARY.md)
 4. Include scenario tasks with verification steps
-5. Add to [examples/README.md](examples/README.md)
-
-See [DEVOPS-AS-APPS-MASTER-PLAN.md](docs/DEVOPS-AS-APPS-MASTER-PLAN.md) for architecture guidance.
 
 ## 📄 License
 
