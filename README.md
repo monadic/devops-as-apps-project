@@ -229,7 +229,7 @@ devops-examples/
 
 See [monadic/devops-sdk](https://github.com/monadic/devops-sdk) for the Go SDK used by all examples.
 
-## 🎓 Key Takeaways
+## 🎓 Key Takeaways (accordingt to Claude)
 
 ### For Platform Engineers
 
@@ -255,13 +255,6 @@ See [monadic/devops-sdk](https://github.com/monadic/devops-sdk) for the Go SDK u
 - **Scalable** - Horizontal scaling, HA, zero downtime
 - **Extensible** - Full source control, easy to customize
 
-## 🚀 Next Steps
-
-1. **Try an example** - Start with [Drift Detector](https://github.com/monadic/devops-examples/tree/main/drift-detector)
-2. **Read the patterns** - [Canonical Patterns](CANONICAL-PATTERNS-SUMMARY.md)
-3. **Understand ConfigHub** - [Actual Features](CONFIGHUB-ACTUAL-FEATURES.md)
-4. **Build your own** - Apply patterns to your use case
-
 ## 📞 Getting Help
 
 - **ConfigHub**: [docs.confighub.com](https://docs.confighub.com)
@@ -275,8 +268,8 @@ To add a new DevOps app example:
 
 1. Copy structure from drift-detector or cost-optimizer in [devops-examples](https://github.com/monadic/devops-examples)
 2. Follow the global-app README pattern
-3. Use all 12 canonical ConfigHub patterns from [CANONICAL-PATTERNS-SUMMARY.md](CANONICAL-PATTERNS-SUMMARY.md)
-4. Include scenario tasks with verification steps
+3. Follow ConfigHub patterns from [CANONICAL-PATTERNS-SUMMARY.md](CANONICAL-PATTERNS-SUMMARY.md)
+4. Consider scenario tasks with verification steps  
 
 ## 📄 License
 
