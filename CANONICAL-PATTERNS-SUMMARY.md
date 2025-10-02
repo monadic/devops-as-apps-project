@@ -7,13 +7,15 @@ This document summarizes the canonical patterns from the global-app reference im
 ## Key Takeaways
 
 1. **ALWAYS** use `cub space new-prefix` for unique naming
-2. **ALWAYS** create environment hierarchy with upstream/downstream
-3. **ALWAYS** use informers, not polling
-4. **ALWAYS** deploy through ConfigHub, not kubectl
-5. **ALWAYS** use Sets and Filters for bulk operations
-6. **ALWAYS** use push-upgrade for propagation
-7. **ALWAYS** use ConfigHub, cub and sdk features where possible. Extend sdk with common features.
-8. **ALWAYS** check code to remove any hallucinated features of ConfigHub
+2. **ALWAYS** use the ConfigHub unit model and cub CLI for managaing config
+3. **ALWAYS** follow the global-app model for app structure, use of CLI, scripts
+4. **ALWAYS** create environment hierarchy with upstream/downstream
+5. **ALWAYS** use informers, not polling
+6. **ALWAYS** deploy through ConfigHub, not kubectl
+7. **ALWAYS** use Sets and Filters for bulk operations
+8. **ALWAYS** use push-upgrade for propagation
+9. **ALWAYS** use ConfigHub, cub and sdk features where possible. Extend sdk with common features.
+10. **ALWAYS** check code to remove any hallucinated features of ConfigHub
 
 ## Standard App Structure
 
@@ -268,11 +270,13 @@ cub link create \
 # Units will automatically use the linked infrastructure
 ```
 
-## ConfigHub Features We Use (REAL)
+## ConfigHub Features We Use 
 
-### ✅ Features That Exist:
+Each example should make the maximum possible use of ConfigHub's specific features.  If the example works around ConfigHub by using eg kubectl, then we consider that a mistake that we should correct.
+
+### ✅ Features:
 - **Spaces**: Workspaces with unique prefixes
-- **Units**: Configuration items
+- **Units**: Configuration items and lifecycle eg. update, clone
 - **Sets**: Groups for bulk operations
 - **Filters**: WHERE clause queries
 - **Upstream/Downstream**: Inheritance via UpstreamUnitID
