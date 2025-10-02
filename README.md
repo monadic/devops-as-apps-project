@@ -2,7 +2,8 @@
 
 **Build, Manage and Operate modern applications with ConfigHub** 
 
-We shall use 
+We provide a toolkit of example apps that are built using:
+
 - **ConfigHub** to manage configurations, custom versions, and operational changes 
 - **Kubernetes** for continuously running, event-driven and stateful applications
 - **Claude AI** for intelligent decision-making agents
@@ -36,7 +37,7 @@ Although ConfigHub is useful for many kinds of applications, in these examples w
 
 We believe these features are an excellent showcase for how SREs and DevOps teams can make use of ConfigHub for AI Native Operations.
 
-## Quick Start
+## Get Started with Examples
 
 ```bash
 # 1. Install prerequisites
@@ -58,21 +59,12 @@ kubectl get all -n devops-apps     # Check deployment
 # Then follow the QUICKSTART.md in each example
 ```
 
-## 📚 Documentation
-
-### For Getting Started
-
-- **[DevOps Examples Repository](https://github.com/monadic/devops-examples)** - Find our examples here
+- **[DevOps Examples Repository](https://github.com/monadic/devops-examples)** - Find our current 'devops as apps' examples here
   - [Drift Detector](https://github.com/monadic/devops-examples/tree/main/drift-detector) - Auto-correct configuration drift
   - [Cost Optimizer](https://github.com/monadic/devops-examples/tree/main/cost-optimizer) - AI-powered cost reduction
   - [Cost Impact Monitor](https://github.com/monadic/devops-examples/tree/main/cost-impact-monitor) - Pre-deployment cost analysis
 
-### For Understanding Canonical Patterns
-
-- **[Canonical Patterns Summary](CANONICAL-PATTERNS-SUMMARY.md)** - How apps work with ConfigHub
-- **[ConfigHub Deployment Pattern](CONFIGHUB-DEPLOYMENT-PATTERN.md)** - How to deploy apps via ConfigHub
-- **[ConfigHub SDK extension libary](https://github.com/monadic/devops-sdk)** - some SDK addons 
-- **[ConfigHub Actual Features](CONFIGHUB-ACTUAL-FEATURES.md)** - API notes (created by Claude)
+Note that drift detection is a common use case in DevOps when declarative tools are used.  ConfigHub supports multiple scenarios for this, including integration with standard 3rd party GitOps tools.  However in this example we show how, for simple "dev" cases, drift can be observed directly and remedied using config updates.
 
 ## 🎯 Live Examples
 
@@ -142,7 +134,7 @@ See the [cost-optimizer README](https://github.com/monadic/devops-examples/tree/
 
 ### ConfigHub Canonical Patterns
 
-All examples follow these patterns from the global-app reference:
+ConfigHub's ["global app" example](https://github.com/confighub/examples/blob/main/global-app/README.md) illustrates the main features of a ConfigHub app.
 
 1. **Unique Project Prefix** - `cub space new-prefix` prevents collisions
 2. **Environment Hierarchy** - base → dev → staging → prod
@@ -155,9 +147,7 @@ All examples follow these patterns from the global-app reference:
 9. **ConfigHub Functions** - `cub run` for common operations
 10. **Links** - Connect app units to infrastructure
 
-See [CANONICAL-PATTERNS-SUMMARY.md](CANONICAL-PATTERNS-SUMMARY.md) for details.
-
-### DevOps App Structure
+### DevOps App Structure and Deployment
 
 Every app follows this standardized structure:
 
@@ -183,11 +173,19 @@ app-name/
 └── go.mod                      # Go module
 ```
 
-**Common workflow:**
+**Deployment flow:**
 1. `bin/install-base` - Create spaces, filters, and units in ConfigHub
 2. `bin/setup-worker` - Install worker that executes `cub unit apply`
 3. `bin/apply-base` - Set targets and deploy to Kubernetes
 4. `bin/test-workflow` - Validate everything works
+
+### To learn more
+
+- **[Canonical Patterns Summary](CANONICAL-PATTERNS-SUMMARY.md)** - A deeper explanation of the principles of ConfigHub apps 
+- **[ConfigHub Deployment Pattern](CONFIGHUB-DEPLOYMENT-PATTERN.md)** - How to deploy apps via ConfigHub
+- **[ConfigHub SDK extension libary](https://github.com/monadic/devops-sdk)** - some SDK addons 
+- **[ConfigHub Actual Features](CONFIGHUB-ACTUAL-FEATURES.md)** - API notes (created by Claude)
+
 
 ## 🛠️ Prerequisites
 
