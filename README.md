@@ -61,7 +61,7 @@ bin/test-workflow                  # Validate everything works
 
 # 4. See the app in action
 kubectl get all -n devops-apps     # Check deployment
-# Then follow the QUICKSTART.md in each example
+# Then follow the README in each example
 ```
 
 - **[DevOps Examples Repository](https://github.com/monadic/devops-examples)** - Find our current 'devops as apps' examples here
@@ -133,16 +133,18 @@ See the [cost-optimizer README](https://github.com/monadic/devops-examples/tree/
 
 ConfigHub's ["global app" example](https://github.com/confighub/examples/blob/main/global-app/README.md) illustrates the main features of a ConfigHub app.
 
-1. **Unique Project Prefix** - `cub space new-prefix` prevents collisions
-2. **Environment Hierarchy** - base → dev → staging → prod
-3. **Filters for Targeting** - SQL-like WHERE clauses
-4. **Sets for Grouping** - Bulk operations on related units
-5. **Push-Upgrade** - Automatic downstream propagation
-6. **Changesets** - Atomic multi-unit operations
-7. **Lateral Promotion** - Conservative region-by-region rollout
-8. **Revision Management** - Diff, rollback, audit trail
-9. **ConfigHub Functions** - `cub run` for common operations
-10. **Links** - Connect app units to infrastructure
+1. **Unique Project Naming** - `cub space new-prefix` prevents collisions
+2. **Space Hierarchy** - base → qa → staging → prod with upstream/downstream
+3. **Filter Creation** - SQL-like WHERE clauses for targeting units
+4. **Environment Cloning** - Clone units with `--upstream-unit` relationships
+5. **Version Promotion** - Set versions with `cub run set-image-reference`
+6. **Bulk Operations with Sets** - Group related units for bulk operations
+7. **Event-Driven Architecture** - React immediately with Kubernetes informers
+8. **ConfigHub Functions** - `cub run` for common operations (version, env vars, resources)
+9. **Changesets** - Atomic multi-unit operations with lock/unlock
+10. **Lateral Promotion** - Conservative region-by-region rollout bypassing hierarchy
+11. **Revision Management** - List, diff, rollback with full history
+12. **Link Management** - Connect app units to infrastructure units
 
 ### DevOps App Structure and Deployment
 
