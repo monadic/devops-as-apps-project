@@ -73,6 +73,8 @@ Note that drift detection is a common use case in DevOps when declarative tools 
 
 ## 🎯 Live Examples
 
+Each example has its own docs and quick start for new users.  Below we summarise a couple of the examples for intro purposes.
+
 ### 1. Drift Detector
 
 Continuous drift detection with auto-correction:
@@ -124,16 +126,6 @@ kubectl port-forward -n cost-optimizer svc/cost-optimizer 8081:8081
 - Metrics server integration
 
 See the [cost-optimizer README](https://github.com/monadic/devops-examples/tree/main/cost-optimizer) for full guide.
-
-## 📖 Learning Path
-
-**New to this project?** Follow this order:
-
-1. **[Quick Start](#quick-start)** (5 min) - Get running
-2. **[Drift Detector](https://github.com/monadic/devops-examples/tree/main/drift-detector)** (20 min) - Step-by-step deployment
-3. **[Canonical Patterns](CANONICAL-PATTERNS-SUMMARY.md)** (15 min) - Understand the patterns
-4. **[Cost Optimizer](https://github.com/monadic/devops-examples/tree/main/cost-optimizer)** (30 min) - Advanced AI integration
-5. **Build your own** - Apply patterns to your use case
 
 ## 🔑 Core Concepts
 
