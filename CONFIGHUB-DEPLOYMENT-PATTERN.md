@@ -1,6 +1,6 @@
 # ConfigHub Deployment Pattern for DevOps Apps
 
-This file created by Claude as a reference for correct patterns for dpeloying apps using workers.
+This file created by Claude as a reference for correct patterns for deploying apps using workers, cub CLI and SDK.
 
 ## Executive Summary
 
