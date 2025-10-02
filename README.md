@@ -1,16 +1,18 @@
-# DevOps as Apps
+# Example Apps with ConfigHub
 
-**Build DevOps tools as persistent Kubernetes applications** - continuously running, maintaining state, using AI, and reacting to events in real-time.
+**Build, Manage and Operate modern applications with ConfigHub** 
 
-This project demonstrates how to build modern DevOps automation using:
-- **ConfigHub** for configuration management and environment promotion
-- **Claude AI** for intelligent decision-making
-- **Kubernetes** for persistent, event-driven applications
-- **Canonical patterns** from ConfigHub's global-app reference
+We shall use 
+- **ConfigHub** to manage configurations, custom versions, and operational changes 
+- **Kubernetes** for continuously running, event-driven and stateful applications
+- **Claude AI** for intelligent decision-making agents
+- **Canonical patterns** from ConfigHub's global-app reference and SDK
 
-## Why DevOps as Apps?
+## Introducing DevOps as Apps
 
-Traditional DevOps tools are scripts or ephemeral workflows that run and exit. **DevOps as Apps** treats automation as first-class applications with:
+Although ConfigHub is useful for many kinds of applications, in these examples we want to focus on "DevOps Apps".  A lot of Ops and DevOps consists of "Jobs to be done" like deployment, change management, cost tracking, alerting on drift.  Traditionally practitioner tools run as scripts or ephemeral workflows that run and exit.  And more recently "Agentic workflows" have been proposed as way for AI-powered agents to integrate into operational workflows.  We believe the vision of "AI Native" automated operations is exciting.  In these examples we want to show you how to achieve this using *agentic devops applications* on ConfigHub, rather than using *workflows*.
+
+**DevOps as Apps** treats automation as first-class applications with:
 
 - ✅ **Persistent execution** - Run continuously, not just when triggered
 - ✅ **Event-driven** - React immediately using Kubernetes informers
@@ -20,7 +22,7 @@ Traditional DevOps tools are scripts or ephemeral workflows that run and exit. *
 - ✅ **Observable** - Built-in dashboards and metrics
 - ✅ **Maintainable** - Standard K8s deployment, versioning, rollback
 
-### vs Agentic DevOps Workflows (e.g., Cased)
+### Comparison between vs Agentic Workflows and DevOps as Apps
 
 | Aspect | Agentic Workflows | DevOps as Apps |
 |--------|------------------|----------------|
@@ -31,6 +33,8 @@ Traditional DevOps tools are scripts or ephemeral workflows that run and exit. *
 | **Environments** | Manual copying | Push-upgrade propagation |
 | **Rollback** | Redeploy old version | Revision history |
 | **Cost** | Per-workflow pricing | Open source + ConfigHub |
+
+We believe these features are an excellent showcase for how SREs and DevOps teams can make use of ConfigHub for AI Native Operations.
 
 ## Quick Start
 
@@ -58,16 +62,17 @@ kubectl get all -n devops-apps     # Check deployment
 
 ### For Getting Started
 
-- **[DevOps Examples Repository](https://github.com/monadic/devops-examples)** - Production-ready examples
+- **[DevOps Examples Repository](https://github.com/monadic/devops-examples)** - Find our examples here
   - [Drift Detector](https://github.com/monadic/devops-examples/tree/main/drift-detector) - Auto-correct configuration drift
   - [Cost Optimizer](https://github.com/monadic/devops-examples/tree/main/cost-optimizer) - AI-powered cost reduction
   - [Cost Impact Monitor](https://github.com/monadic/devops-examples/tree/main/cost-impact-monitor) - Pre-deployment cost analysis
 
-### For Understanding Patterns
+### For Understanding Canonical Patterns
 
-- **[Canonical Patterns Summary](CANONICAL-PATTERNS-SUMMARY.md)** - 12 patterns you MUST follow
+- **[Canonical Patterns Summary](CANONICAL-PATTERNS-SUMMARY.md)** - How apps work with ConfigHub
 - **[ConfigHub Deployment Pattern](CONFIGHUB-DEPLOYMENT-PATTERN.md)** - How to deploy apps via ConfigHub
-- **[ConfigHub Actual Features](CONFIGHUB-ACTUAL-FEATURES.md)** - API reference (what's real vs hallucinated)
+- **[ConfigHub SDK extension libary](https://github.com/monadic/devops-sdk)** - some SDK addons 
+- **[ConfigHub Actual Features](CONFIGHUB-ACTUAL-FEATURES.md)** - API notes (created by Claude)
 
 ## 🎯 Live Examples
 
