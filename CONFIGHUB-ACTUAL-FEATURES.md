@@ -1,6 +1,8 @@
 # ConfigHub ACTUAL Features (Based on Source Code Review)
 
-## ✅ CONFIRMED ConfigHub Features (These Actually Exist)
+NOTE this document created 100% by Claude and should be treated as a reference for AI work.
+
+## ✅ CONFIRMED ConfigHub Features 
 
 Based on reviewing the actual ConfigHub source code at `github.com/confighubai/confighub`:
 
