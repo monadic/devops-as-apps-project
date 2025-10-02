@@ -8,7 +8,7 @@ This document summarizes the canonical patterns from the global-app reference im
 
 1. **ALWAYS** use `cub space new-prefix` for unique naming
 2. **ALWAYS** use the ConfigHub unit model and cub CLI for managaing config
-3. **ALWAYS** follow the global-app model for app structure, use of CLI, scripts
+3. **ALWAYS** follow the global-app model for app structure, use of CLI, scripts -- see [HERE](https://github.com/monadic/devops-as-apps-project/blob/main/CONFIGHUB-DEPLOYMENT-PATTERN.md)
 4. **ALWAYS** create environment hierarchy with upstream/downstream
 5. **ALWAYS** use informers, not polling
 6. **ALWAYS** deploy through ConfigHub, not kubectl
