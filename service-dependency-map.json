@@ -1,0 +1,908 @@
+{
+  "metadata": {
+    "name": "TraderX Service Dependency Map",
+    "version": "1.0.0",
+    "description": "Complete service dependency graph for FINOS TraderX trading platform",
+    "total_services": 8,
+    "critical_path_services": 3,
+    "max_dependency_depth": 4,
+    "deployment_time_estimate": "8-10 minutes"
+  },
+  "services": {
+    "namespace": {
+      "name": "namespace",
+      "type": "infrastructure",
+      "order": 0,
+      "dependencies": [],
+      "dependents": [
+        "reference-data",
+        "people-service",
+        "account-service",
+        "position-service",
+        "trade-service",
+        "trade-processor",
+        "trade-feed",
+        "web-gui",
+        "ingress"
+      ],
+      "critical_path": true,
+      "deployment_time": "10s",
+      "health_check": {
+        "type": "kubernetes",
+        "command": "kubectl get ns traderx-dev",
+        "expected": "Active"
+      },
+      "confighub_units": [
+        {
+          "name": "namespace",
+          "type": "kubernetes/v1/Namespace",
+          "source": "confighub/base/namespace.yaml"
+        }
+      ],
+      "labels": {
+        "type": "infra",
+        "order": "0",
+        "layer": "infrastructure"
+      }
+    },
+    "reference-data": {
+      "name": "reference-data",
+      "type": "data",
+      "order": 1,
+      "technology": "Java/Spring Boot",
+      "port": 18085,
+      "dependencies": [
+        "namespace"
+      ],
+      "dependents": [
+        "people-service",
+        "account-service",
+        "position-service",
+        "trade-service",
+        "web-gui"
+      ],
+      "critical_path": true,
+      "criticality": "CRITICAL",
+      "sla": {
+        "availability": "99.95%",
+        "max_downtime_per_month": "43 minutes"
+      },
+      "deployment_time": "60s",
+      "health_check": {
+        "type": "http",
+        "endpoint": "http://reference-data:18085/health",
+        "expected_status": 200,
+        "timeout": "5s",
+        "interval": "10s"
+      },
+      "confighub_units": [
+        {
+          "name": "reference-data-deployment",
+          "type": "kubernetes/v1/Deployment",
+          "source": "confighub/base/reference-data-deployment.yaml"
+        },
+        {
+          "name": "reference-data-service",
+          "type": "kubernetes/v1/Service",
+          "source": "confighub/base/reference-data-service.yaml"
+        }
+      ],
+      "labels": {
+        "service": "reference-data",
+        "layer": "data",
+        "tech": "Java/Spring",
+        "order": "1",
+        "port": "18085",
+        "critical": "true"
+      },
+      "replicas": {
+        "dev": 1,
+        "staging": 2,
+        "prod": 3
+      },
+      "resources": {
+        "requests": {
+          "cpu": "250m",
+          "memory": "256Mi"
+        },
+        "limits": {
+          "cpu": "500m",
+          "memory": "512Mi"
+        }
+      },
+      "api_endpoints": [
+        {
+          "path": "/api/securities",
+          "method": "GET",
+          "description": "Get list of securities"
+        },
+        {
+          "path": "/api/securities/{id}",
+          "method": "GET",
+          "description": "Get security by ID"
+        },
+        {
+          "path": "/health",
+          "method": "GET",
+          "description": "Health check endpoint"
+        }
+      ],
+      "failure_impact": "Complete system failure - all services depend on master data"
+    },
+    "people-service": {
+      "name": "people-service",
+      "type": "backend",
+      "order": 2,
+      "technology": "Java/Spring Boot",
+      "port": 18089,
+      "dependencies": [
+        "namespace",
+        "reference-data"
+      ],
+      "dependents": [
+        "trade-service",
+        "web-gui"
+      ],
+      "critical_path": false,
+      "criticality": "HIGH",
+      "deployment_time": "60s",
+      "health_check": {
+        "type": "http",
+        "endpoint": "http://people-service:18089/health",
+        "expected_status": 200,
+        "timeout": "5s",
+        "interval": "10s"
+      },
+      "confighub_units": [
+        {
+          "name": "people-service-deployment",
+          "type": "kubernetes/v1/Deployment",
+          "source": "confighub/base/people-service-deployment.yaml"
+        },
+        {
+          "name": "people-service-service",
+          "type": "kubernetes/v1/Service",
+          "source": "confighub/base/people-service-service.yaml"
+        }
+      ],
+      "labels": {
+        "service": "people-service",
+        "layer": "backend",
+        "tech": "Java/Spring",
+        "order": "2",
+        "port": "18089"
+      },
+      "replicas": {
+        "dev": 1,
+        "staging": 2,
+        "prod": 2
+      },
+      "resources": {
+        "requests": {
+          "cpu": "200m",
+          "memory": "256Mi"
+        },
+        "limits": {
+          "cpu": "500m",
+          "memory": "512Mi"
+        }
+      },
+      "api_endpoints": [
+        {
+          "path": "/api/people",
+          "method": "GET",
+          "description": "Get list of traders"
+        },
+        {
+          "path": "/api/people/{id}",
+          "method": "GET",
+          "description": "Get trader by ID"
+        }
+      ],
+      "failure_impact": "User management unavailable - trades cannot be attributed to traders"
+    },
+    "account-service": {
+      "name": "account-service",
+      "type": "backend",
+      "order": 3,
+      "technology": "Node.js/NestJS",
+      "port": 18091,
+      "dependencies": [
+        "namespace",
+        "reference-data"
+      ],
+      "dependents": [
+        "position-service",
+        "trade-service",
+        "web-gui"
+      ],
+      "critical_path": false,
+      "criticality": "HIGH",
+      "deployment_time": "60s",
+      "health_check": {
+        "type": "http",
+        "endpoint": "http://account-service:18091/health",
+        "expected_status": 200,
+        "timeout": "5s",
+        "interval": "10s"
+      },
+      "confighub_units": [
+        {
+          "name": "account-service-deployment",
+          "type": "kubernetes/v1/Deployment",
+          "source": "confighub/base/account-service-deployment.yaml"
+        },
+        {
+          "name": "account-service-service",
+          "type": "kubernetes/v1/Service",
+          "source": "confighub/base/account-service-service.yaml"
+        }
+      ],
+      "labels": {
+        "service": "account-service",
+        "layer": "backend",
+        "tech": "Node.js/NestJS",
+        "order": "3",
+        "port": "18091"
+      },
+      "replicas": {
+        "dev": 1,
+        "staging": 2,
+        "prod": 2
+      },
+      "resources": {
+        "requests": {
+          "cpu": "200m",
+          "memory": "256Mi"
+        },
+        "limits": {
+          "cpu": "500m",
+          "memory": "512Mi"
+        }
+      },
+      "api_endpoints": [
+        {
+          "path": "/api/accounts",
+          "method": "GET",
+          "description": "Get list of accounts"
+        },
+        {
+          "path": "/api/accounts/{id}",
+          "method": "GET",
+          "description": "Get account by ID"
+        },
+        {
+          "path": "/api/accounts/{id}/balance",
+          "method": "GET",
+          "description": "Get account balance"
+        }
+      ],
+      "failure_impact": "Account operations unavailable - trades cannot be validated against balances"
+    },
+    "position-service": {
+      "name": "position-service",
+      "type": "backend",
+      "order": 4,
+      "technology": "Java/Spring Boot",
+      "port": 18090,
+      "dependencies": [
+        "namespace",
+        "reference-data",
+        "account-service"
+      ],
+      "dependents": [
+        "trade-service",
+        "web-gui"
+      ],
+      "critical_path": true,
+      "criticality": "CRITICAL",
+      "sla": {
+        "availability": "99.95%",
+        "max_downtime_per_month": "43 minutes"
+      },
+      "deployment_time": "60s",
+      "health_check": {
+        "type": "http",
+        "endpoint": "http://position-service:18090/health",
+        "expected_status": 200,
+        "timeout": "5s",
+        "interval": "10s"
+      },
+      "confighub_units": [
+        {
+          "name": "position-service-deployment",
+          "type": "kubernetes/v1/Deployment",
+          "source": "confighub/base/position-service-deployment.yaml"
+        },
+        {
+          "name": "position-service-service",
+          "type": "kubernetes/v1/Service",
+          "source": "confighub/base/position-service-service.yaml"
+        }
+      ],
+      "labels": {
+        "service": "position-service",
+        "layer": "backend",
+        "tech": "Java/Spring",
+        "order": "4",
+        "port": "18090",
+        "critical": "true"
+      },
+      "replicas": {
+        "dev": 1,
+        "staging": 2,
+        "prod": 3
+      },
+      "resources": {
+        "requests": {
+          "cpu": "500m",
+          "memory": "512Mi"
+        },
+        "limits": {
+          "cpu": "1000m",
+          "memory": "1Gi"
+        }
+      },
+      "api_endpoints": [
+        {
+          "path": "/api/positions",
+          "method": "GET",
+          "description": "Get list of positions"
+        },
+        {
+          "path": "/api/positions/{id}",
+          "method": "GET",
+          "description": "Get position by ID"
+        },
+        {
+          "path": "/api/positions/account/{accountId}",
+          "method": "GET",
+          "description": "Get positions for an account"
+        }
+      ],
+      "failure_impact": "Position tracking unavailable - trades cannot update positions"
+    },
+    "trade-service": {
+      "name": "trade-service",
+      "type": "backend",
+      "order": 5,
+      "technology": ".NET/C#",
+      "port": 18092,
+      "dependencies": [
+        "namespace",
+        "reference-data",
+        "people-service",
+        "account-service",
+        "position-service"
+      ],
+      "dependents": [
+        "trade-processor",
+        "trade-feed",
+        "web-gui"
+      ],
+      "critical_path": true,
+      "criticality": "CRITICAL",
+      "priority": "HIGHEST",
+      "sla": {
+        "availability": "99.95%",
+        "max_downtime_per_month": "43 minutes",
+        "latency_p95": "200ms",
+        "latency_p99": "500ms"
+      },
+      "deployment_time": "60s",
+      "health_check": {
+        "type": "http",
+        "endpoint": "http://trade-service:18092/health",
+        "expected_status": 200,
+        "timeout": "5s",
+        "interval": "10s"
+      },
+      "confighub_units": [
+        {
+          "name": "trade-service-deployment",
+          "type": "kubernetes/v1/Deployment",
+          "source": "confighub/base/trade-service-deployment.yaml"
+        },
+        {
+          "name": "trade-service-service",
+          "type": "kubernetes/v1/Service",
+          "source": "confighub/base/trade-service-service.yaml"
+        }
+      ],
+      "labels": {
+        "service": "trade-service",
+        "layer": "backend",
+        "tech": ".NET/C#",
+        "order": "5",
+        "port": "18092",
+        "critical": "true",
+        "priority": "highest"
+      },
+      "replicas": {
+        "dev": 1,
+        "staging": 2,
+        "prod": 3
+      },
+      "resources": {
+        "requests": {
+          "cpu": "1000m",
+          "memory": "1Gi"
+        },
+        "limits": {
+          "cpu": "2000m",
+          "memory": "2Gi"
+        }
+      },
+      "api_endpoints": [
+        {
+          "path": "/api/trades",
+          "method": "GET",
+          "description": "Get list of trades"
+        },
+        {
+          "path": "/api/trades/{id}",
+          "method": "GET",
+          "description": "Get trade by ID"
+        },
+        {
+          "path": "/api/trades/new",
+          "method": "POST",
+          "description": "Execute new trade"
+        },
+        {
+          "path": "/api/trades/{id}/cancel",
+          "method": "POST",
+          "description": "Cancel existing trade"
+        }
+      ],
+      "failure_impact": "Trade execution unavailable - COMPLETE TRADING PLATFORM FAILURE",
+      "deployment_strategy": {
+        "dev": "rolling",
+        "staging": "rolling",
+        "prod": "blue-green"
+      }
+    },
+    "trade-processor": {
+      "name": "trade-processor",
+      "type": "backend",
+      "order": 6,
+      "technology": "Python",
+      "port": 0,
+      "dependencies": [
+        "namespace",
+        "trade-service"
+      ],
+      "dependents": [],
+      "critical_path": false,
+      "criticality": "HIGH",
+      "deployment_time": "60s",
+      "health_check": {
+        "type": "kubernetes",
+        "command": "kubectl get pods -l app=trade-processor",
+        "expected": "Running"
+      },
+      "confighub_units": [
+        {
+          "name": "trade-processor-deployment",
+          "type": "kubernetes/v1/Deployment",
+          "source": "confighub/base/trade-processor-deployment.yaml"
+        }
+      ],
+      "labels": {
+        "service": "trade-processor",
+        "layer": "backend",
+        "tech": "Python",
+        "order": "6",
+        "port": "0"
+      },
+      "replicas": {
+        "dev": 1,
+        "staging": 1,
+        "prod": 2
+      },
+      "resources": {
+        "requests": {
+          "cpu": "500m",
+          "memory": "512Mi"
+        },
+        "limits": {
+          "cpu": "1000m",
+          "memory": "1Gi"
+        }
+      },
+      "api_endpoints": [],
+      "description": "Async trade settlement and processing (no external API)",
+      "failure_impact": "Trade settlement delayed - trades execute but not settled"
+    },
+    "trade-feed": {
+      "name": "trade-feed",
+      "type": "backend",
+      "order": 7,
+      "technology": "Java/Spring Boot",
+      "port": 18088,
+      "dependencies": [
+        "namespace",
+        "trade-service"
+      ],
+      "dependents": [
+        "web-gui"
+      ],
+      "critical_path": false,
+      "criticality": "MEDIUM",
+      "deployment_time": "60s",
+      "health_check": {
+        "type": "http",
+        "endpoint": "http://trade-feed:18088/health",
+        "expected_status": 200,
+        "timeout": "5s",
+        "interval": "10s"
+      },
+      "confighub_units": [
+        {
+          "name": "trade-feed-deployment",
+          "type": "kubernetes/v1/Deployment",
+          "source": "confighub/base/trade-feed-deployment.yaml"
+        },
+        {
+          "name": "trade-feed-service",
+          "type": "kubernetes/v1/Service",
+          "source": "confighub/base/trade-feed-service.yaml"
+        }
+      ],
+      "labels": {
+        "service": "trade-feed",
+        "layer": "backend",
+        "tech": "Java/Spring",
+        "order": "7",
+        "port": "18088"
+      },
+      "replicas": {
+        "dev": 1,
+        "staging": 2,
+        "prod": 2
+      },
+      "resources": {
+        "requests": {
+          "cpu": "500m",
+          "memory": "512Mi"
+        },
+        "limits": {
+          "cpu": "1000m",
+          "memory": "1Gi"
+        }
+      },
+      "api_endpoints": [
+        {
+          "path": "/api/feed",
+          "method": "GET",
+          "description": "WebSocket endpoint for real-time trade feed"
+        }
+      ],
+      "failure_impact": "Real-time feed unavailable - UI doesn't update live but polling still works"
+    },
+    "web-gui": {
+      "name": "web-gui",
+      "type": "frontend",
+      "order": 8,
+      "technology": "Angular/React",
+      "port": 18080,
+      "dependencies": [
+        "namespace",
+        "reference-data",
+        "people-service",
+        "account-service",
+        "position-service",
+        "trade-service",
+        "trade-feed"
+      ],
+      "dependents": [
+        "ingress"
+      ],
+      "critical_path": false,
+      "criticality": "MEDIUM",
+      "deployment_time": "60s",
+      "health_check": {
+        "type": "http",
+        "endpoint": "http://web-gui:18080/",
+        "expected_status": 200,
+        "timeout": "5s",
+        "interval": "10s"
+      },
+      "confighub_units": [
+        {
+          "name": "web-gui-deployment",
+          "type": "kubernetes/v1/Deployment",
+          "source": "confighub/base/web-gui-deployment.yaml"
+        },
+        {
+          "name": "web-gui-service",
+          "type": "kubernetes/v1/Service",
+          "source": "confighub/base/web-gui-service.yaml"
+        }
+      ],
+      "labels": {
+        "service": "web-gui",
+        "layer": "frontend",
+        "tech": "Angular/React",
+        "order": "8",
+        "port": "18080"
+      },
+      "replicas": {
+        "dev": 1,
+        "staging": 2,
+        "prod": 3
+      },
+      "resources": {
+        "requests": {
+          "cpu": "200m",
+          "memory": "256Mi"
+        },
+        "limits": {
+          "cpu": "500m",
+          "memory": "512Mi"
+        }
+      },
+      "api_endpoints": [
+        {
+          "path": "/",
+          "method": "GET",
+          "description": "Main UI application"
+        }
+      ],
+      "failure_impact": "User interface unavailable - API still accessible but no UI"
+    },
+    "ingress": {
+      "name": "ingress",
+      "type": "infrastructure",
+      "order": 9,
+      "technology": "nginx/traefik",
+      "dependencies": [
+        "namespace",
+        "web-gui",
+        "reference-data",
+        "people-service",
+        "account-service",
+        "position-service",
+        "trade-service",
+        "trade-feed"
+      ],
+      "dependents": [],
+      "critical_path": false,
+      "criticality": "HIGH",
+      "deployment_time": "30s",
+      "health_check": {
+        "type": "http",
+        "endpoint": "http://traderx.local/",
+        "expected_status": 200,
+        "timeout": "5s",
+        "interval": "10s"
+      },
+      "confighub_units": [
+        {
+          "name": "ingress",
+          "type": "kubernetes/networking.k8s.io/v1/Ingress",
+          "source": "confighub/base/ingress.yaml"
+        }
+      ],
+      "labels": {
+        "type": "infra",
+        "order": "9"
+      },
+      "routes": [
+        {
+          "path": "/",
+          "service": "web-gui",
+          "port": 18080
+        },
+        {
+          "path": "/api/reference-data",
+          "service": "reference-data",
+          "port": 18085
+        },
+        {
+          "path": "/api/people",
+          "service": "people-service",
+          "port": 18089
+        },
+        {
+          "path": "/api/accounts",
+          "service": "account-service",
+          "port": 18091
+        },
+        {
+          "path": "/api/positions",
+          "service": "position-service",
+          "port": 18090
+        },
+        {
+          "path": "/api/trades",
+          "service": "trade-service",
+          "port": 18092
+        },
+        {
+          "path": "/api/trade-feed",
+          "service": "trade-feed",
+          "port": 18088
+        }
+      ],
+      "failure_impact": "External access unavailable - services still accessible internally"
+    }
+  },
+  "dependency_analysis": {
+    "critical_path": [
+      "namespace",
+      "reference-data",
+      "position-service",
+      "trade-service"
+    ],
+    "critical_path_time": "190s",
+    "parallel_deployable_services": [
+      {
+        "order": 1,
+        "services": ["reference-data"]
+      },
+      {
+        "order": 2,
+        "services": ["people-service"]
+      },
+      {
+        "order": 3,
+        "services": ["account-service"]
+      },
+      {
+        "order": 4,
+        "services": ["position-service"]
+      },
+      {
+        "order": 5,
+        "services": ["trade-service"]
+      },
+      {
+        "order": 6,
+        "services": ["trade-processor"]
+      },
+      {
+        "order": 7,
+        "services": ["trade-feed"]
+      },
+      {
+        "order": 8,
+        "services": ["web-gui"]
+      }
+    ],
+    "total_deployment_time": "550s",
+    "max_parallelization": 1,
+    "dependency_depth": 4
+  },
+  "failure_scenarios": {
+    "reference_data_failure": {
+      "failed_service": "reference-data",
+      "cascading_failures": [
+        "people-service",
+        "account-service",
+        "position-service",
+        "trade-service",
+        "trade-processor",
+        "trade-feed",
+        "web-gui"
+      ],
+      "impact": "COMPLETE SYSTEM FAILURE",
+      "mitigation": "High availability (3 replicas), priority monitoring, immediate alerting"
+    },
+    "trade_service_failure": {
+      "failed_service": "trade-service",
+      "cascading_failures": [
+        "trade-processor",
+        "trade-feed"
+      ],
+      "impact": "TRADING UNAVAILABLE",
+      "mitigation": "Blue-green deployment, instant rollback, 3 replicas in prod"
+    },
+    "web_gui_failure": {
+      "failed_service": "web-gui",
+      "cascading_failures": [],
+      "impact": "UI UNAVAILABLE (API still accessible)",
+      "mitigation": "API-first design, mobile app fallback, 2-3 replicas"
+    }
+  },
+  "deployment_strategies": {
+    "dev": {
+      "method": "rolling",
+      "max_unavailable": 1,
+      "max_surge": 1,
+      "approval": "automatic"
+    },
+    "staging": {
+      "method": "rolling",
+      "max_unavailable": 0,
+      "max_surge": 1,
+      "approval": "automatic",
+      "soak_test_duration": "1h"
+    },
+    "prod": {
+      "method": "blue-green",
+      "critical_services": ["reference-data", "trade-service", "position-service"],
+      "approval": "manual",
+      "soak_test_duration": "24h",
+      "rollback_time": "30s"
+    }
+  },
+  "performance_targets": {
+    "reference_data": {
+      "latency_p95": "50ms",
+      "latency_p99": "100ms",
+      "throughput": "1000 req/s"
+    },
+    "trade_service": {
+      "latency_p95": "200ms",
+      "latency_p99": "500ms",
+      "throughput": "500 trades/s"
+    },
+    "web_gui": {
+      "load_time_p95": "2s",
+      "load_time_p99": "5s"
+    }
+  },
+  "cost_estimates": {
+    "reference_data": {
+      "dev": "$8/month",
+      "staging": "$15/month",
+      "prod": "$25/month"
+    },
+    "people_service": {
+      "dev": "$6/month",
+      "staging": "$12/month",
+      "prod": "$15/month"
+    },
+    "account_service": {
+      "dev": "$6/month",
+      "staging": "$12/month",
+      "prod": "$15/month"
+    },
+    "position_service": {
+      "dev": "$10/month",
+      "staging": "$20/month",
+      "prod": "$25/month"
+    },
+    "trade_service": {
+      "dev": "$25/month",
+      "staging": "$50/month",
+      "prod": "$75/month"
+    },
+    "trade_processor": {
+      "dev": "$8/month",
+      "staging": "$8/month",
+      "prod": "$10/month"
+    },
+    "trade_feed": {
+      "dev": "$10/month",
+      "staging": "$20/month",
+      "prod": "$25/month"
+    },
+    "web_gui": {
+      "dev": "$6/month",
+      "staging": "$12/month",
+      "prod": "$8/month"
+    },
+    "total": {
+      "dev": "$79/month",
+      "staging": "$149/month",
+      "prod": "$198/month",
+      "grand_total": "$426/month"
+    }
+  },
+  "compliance": {
+    "regulations": [
+      "SEC Rule 17a-4",
+      "FINRA 4511",
+      "SOC 2",
+      "PCI-DSS"
+    ],
+    "audit_requirements": {
+      "all_changes_tracked": true,
+      "immutable_logs": true,
+      "rollback_capability": true,
+      "change_approval": "required for prod"
+    }
+  }
+}

@@ -1,0 +1,842 @@
+# TraderX ConfigHub Topology Definition
+# This file defines the complete ConfigHub space hierarchy,
+# filters, sets, and unit structure for TraderX deployment.
+
+# Meta information
+metadata:
+  name: traderx
+  version: "1.0.0"
+  description: "FINOS TraderX trading platform deployed via ConfigHub"
+  canonical_patterns: 12
+  environments: 3  # dev, staging, prod
+  services: 8
+  total_units: 17
+
+# Space definitions
+spaces:
+  # Base space - master definitions
+  base:
+    name: "${prefix}-traderx-base"
+    description: "Master definitions for all TraderX units"
+    labels:
+      project: "${prefix}-traderx"
+      environment: base
+      tier: foundation
+    units: 17
+    upstream: null  # No upstream (root of hierarchy)
+
+  # Filter space - filter and set definitions
+  filters:
+    name: "${prefix}-traderx-filters"
+    description: "Filters and sets for TraderX"
+    labels:
+      project: "${prefix}-traderx"
+      type: filters
+    filters: 7
+    sets: 2
+
+  # Development environment
+  dev:
+    name: "${prefix}-traderx-dev"
+    description: "Development environment"
+    labels:
+      project: "${prefix}-traderx"
+      environment: dev
+      targetable: true
+      auto_deploy: true
+    units: 17
+    upstream: "${prefix}-traderx-base"
+    worker:
+      enabled: true
+      poll_interval: 10s
+      auto_apply: true
+    cluster:
+      context: kind-traderx-dev
+      namespace: traderx-dev
+
+  # Staging environment
+  staging:
+    name: "${prefix}-traderx-staging"
+    description: "Staging environment (pre-production testing)"
+    labels:
+      project: "${prefix}-traderx"
+      environment: staging
+      targetable: true
+      soak_test_required: true
+    units: 17
+    upstream: "${prefix}-traderx-dev"
+    worker:
+      enabled: true
+      poll_interval: 30s
+      auto_apply: true
+    cluster:
+      context: kind-traderx-staging
+      namespace: traderx-staging
+
+  # Production environment
+  prod:
+    name: "${prefix}-traderx-prod"
+    description: "Production environment (live trading)"
+    labels:
+      project: "${prefix}-traderx"
+      environment: prod
+      targetable: true
+      critical: true
+      sla: "99.95"
+      approval_required: true
+    units: 17
+    upstream: "${prefix}-traderx-staging"
+    worker:
+      enabled: true
+      poll_interval: 60s
+      auto_apply: false  # Manual approval for prod
+    cluster:
+      context: gke-traderx-prod
+      namespace: traderx-prod
+
+# Filter definitions
+filters:
+  # Universal filter - all TraderX units
+  all:
+    name: all
+    type: Unit
+    where_clause: "Space.Labels.project = '${prefix}-traderx'"
+    description: "All TraderX units across all environments"
+    use_cases:
+      - "View complete hierarchy"
+      - "Bulk operations across all units"
+      - "Environment cloning"
+
+  # Layer-based filters
+  frontend:
+    name: frontend
+    type: Unit
+    where_clause: "Labels.layer = 'frontend'"
+    description: "Frontend/UI services only"
+    services:
+      - web-gui
+    use_cases:
+      - "Deploy only UI changes"
+      - "Frontend-specific optimizations"
+
+  backend:
+    name: backend
+    type: Unit
+    where_clause: "Labels.layer = 'backend'"
+    description: "Backend services only"
+    services:
+      - people-service
+      - account-service
+      - position-service
+      - trade-service
+      - trade-processor
+      - trade-feed
+    use_cases:
+      - "Deploy backend microservices"
+      - "Backend scaling operations"
+
+  data:
+    name: data
+    type: Unit
+    where_clause: "Labels.layer = 'data'"
+    description: "Data layer services (database-dependent)"
+    services:
+      - reference-data
+      - people-service
+      - account-service
+    use_cases:
+      - "Database migration coordination"
+      - "Data layer optimizations"
+
+  # Service-type filters
+  core-services:
+    name: core-services
+    type: Unit
+    where_clause: "Labels.service IN ('reference-data', 'people-service', 'account-service')"
+    description: "Core foundation services"
+    services:
+      - reference-data
+      - people-service
+      - account-service
+    use_cases:
+      - "Deploy foundational services first"
+      - "Monitor core service health"
+
+  trading-services:
+    name: trading-services
+    type: Unit
+    where_clause: "Labels.service IN ('trade-service', 'trade-processor', 'trade-feed')"
+    description: "Trading-specific services"
+    services:
+      - trade-service
+      - trade-processor
+      - trade-feed
+    use_cases:
+      - "Trading platform updates"
+      - "Trade execution monitoring"
+
+  # Deployment order filter
+  ordered:
+    name: ordered
+    type: Unit
+    where_clause: "Labels.order IS NOT NULL"
+    description: "All services with explicit deployment order"
+    use_cases:
+      - "Ordered deployment sequences"
+      - "Dependency-aware operations"
+
+# Set definitions
+sets:
+  critical-services:
+    name: critical-services
+    space: "${prefix}-traderx-base"
+    description: "Services that must not fail (SLA 99.95%)"
+    labels:
+      tier: critical
+      monitor: true
+      alert: pagerduty
+      priority_class: high
+    members:
+      - reference-data-deployment
+      - trade-service-deployment
+      - position-service-deployment
+    use_cases:
+      - "High-priority monitoring"
+      - "Critical service drift detection"
+      - "Priority resource allocation"
+    sla:
+      availability: 99.95
+      max_downtime_per_month: "43 minutes"
+
+  data-services:
+    name: data-services
+    space: "${prefix}-traderx-base"
+    description: "Data layer services requiring database access"
+    labels:
+      tier: data
+      layer: data
+      backup: required
+      stateful: true
+    members:
+      - reference-data-deployment
+      - people-service-deployment
+      - account-service-deployment
+    use_cases:
+      - "Database backup coordination"
+      - "Data migration planning"
+      - "Stateful service management"
+
+# Unit definitions
+units:
+  # Infrastructure units
+  namespace:
+    name: namespace
+    type: kubernetes/v1/Namespace
+    order: 0
+    layer: infrastructure
+    source_file: confighub/base/namespace.yaml
+    labels:
+      type: infra
+      order: "0"
+    description: "Kubernetes namespace for TraderX"
+
+  # Service units (order 1-8)
+  reference-data:
+    deployment:
+      name: reference-data-deployment
+      type: kubernetes/v1/Deployment
+      order: 1
+      layer: data
+      source_file: confighub/base/reference-data-deployment.yaml
+      labels:
+        service: reference-data
+        layer: data
+        tech: Java/Spring
+        order: "1"
+        port: "18085"
+        critical: "true"
+      dependencies: []
+      description: "Master data service (securities, accounts)"
+      replicas:
+        dev: 1
+        staging: 2
+        prod: 3
+      resources:
+        requests:
+          cpu: 250m
+          memory: 256Mi
+        limits:
+          cpu: 500m
+          memory: 512Mi
+    service:
+      name: reference-data-service
+      type: kubernetes/v1/Service
+      source_file: confighub/base/reference-data-service.yaml
+      port: 18085
+
+  people-service:
+    deployment:
+      name: people-service-deployment
+      type: kubernetes/v1/Deployment
+      order: 2
+      layer: backend
+      source_file: confighub/base/people-service-deployment.yaml
+      labels:
+        service: people-service
+        layer: backend
+        tech: Java/Spring
+        order: "2"
+        port: "18089"
+      dependencies:
+        - reference-data
+      description: "User and trader management service"
+      replicas:
+        dev: 1
+        staging: 2
+        prod: 2
+      resources:
+        requests:
+          cpu: 200m
+          memory: 256Mi
+        limits:
+          cpu: 500m
+          memory: 512Mi
+    service:
+      name: people-service-service
+      type: kubernetes/v1/Service
+      source_file: confighub/base/people-service-service.yaml
+      port: 18089
+
+  account-service:
+    deployment:
+      name: account-service-deployment
+      type: kubernetes/v1/Deployment
+      order: 3
+      layer: backend
+      source_file: confighub/base/account-service-deployment.yaml
+      labels:
+        service: account-service
+        layer: backend
+        tech: Node.js/NestJS
+        order: "3"
+        port: "18091"
+      dependencies:
+        - reference-data
+      description: "Account operations service"
+      replicas:
+        dev: 1
+        staging: 2
+        prod: 2
+      resources:
+        requests:
+          cpu: 200m
+          memory: 256Mi
+        limits:
+          cpu: 500m
+          memory: 512Mi
+    service:
+      name: account-service-service
+      type: kubernetes/v1/Service
+      source_file: confighub/base/account-service-service.yaml
+      port: 18091
+
+  position-service:
+    deployment:
+      name: position-service-deployment
+      type: kubernetes/v1/Deployment
+      order: 4
+      layer: backend
+      source_file: confighub/base/position-service-deployment.yaml
+      labels:
+        service: position-service
+        layer: backend
+        tech: Java/Spring
+        order: "4"
+        port: "18090"
+        critical: "true"
+      dependencies:
+        - reference-data
+        - account-service
+      description: "Position tracking service"
+      replicas:
+        dev: 1
+        staging: 2
+        prod: 3
+      resources:
+        requests:
+          cpu: 500m
+          memory: 512Mi
+        limits:
+          cpu: 1000m
+          memory: 1Gi
+    service:
+      name: position-service-service
+      type: kubernetes/v1/Service
+      source_file: confighub/base/position-service-service.yaml
+      port: 18090
+
+  trade-service:
+    deployment:
+      name: trade-service-deployment
+      type: kubernetes/v1/Deployment
+      order: 5
+      layer: backend
+      source_file: confighub/base/trade-service-deployment.yaml
+      labels:
+        service: trade-service
+        layer: backend
+        tech: .NET/C#
+        order: "5"
+        port: "18092"
+        critical: "true"
+        priority: highest
+      dependencies:
+        - reference-data
+        - people-service
+        - account-service
+        - position-service
+      description: "Trade execution service (CRITICAL)"
+      replicas:
+        dev: 1
+        staging: 2
+        prod: 3
+      resources:
+        requests:
+          cpu: 1000m
+          memory: 1Gi
+        limits:
+          cpu: 2000m
+          memory: 2Gi
+      health_checks:
+        liveness:
+          path: /health/live
+          initial_delay: 30
+          period: 10
+        readiness:
+          path: /health/ready
+          initial_delay: 10
+          period: 5
+    service:
+      name: trade-service-service
+      type: kubernetes/v1/Service
+      source_file: confighub/base/trade-service-service.yaml
+      port: 18092
+
+  trade-processor:
+    deployment:
+      name: trade-processor-deployment
+      type: kubernetes/v1/Deployment
+      order: 6
+      layer: backend
+      source_file: confighub/base/trade-processor-deployment.yaml
+      labels:
+        service: trade-processor
+        layer: backend
+        tech: Python
+        order: "6"
+        port: "0"  # No external port
+      dependencies:
+        - trade-service
+      description: "Async trade settlement processor"
+      replicas:
+        dev: 1
+        staging: 1
+        prod: 2
+      resources:
+        requests:
+          cpu: 500m
+          memory: 512Mi
+        limits:
+          cpu: 1000m
+          memory: 1Gi
+
+  trade-feed:
+    deployment:
+      name: trade-feed-deployment
+      type: kubernetes/v1/Deployment
+      order: 7
+      layer: backend
+      source_file: confighub/base/trade-feed-deployment.yaml
+      labels:
+        service: trade-feed
+        layer: backend
+        tech: Java/Spring
+        order: "7"
+        port: "18088"
+      dependencies:
+        - trade-service
+      description: "Real-time trade feed (WebSocket/SSE)"
+      replicas:
+        dev: 1
+        staging: 2
+        prod: 2
+      resources:
+        requests:
+          cpu: 500m
+          memory: 512Mi
+        limits:
+          cpu: 1000m
+          memory: 1Gi
+    service:
+      name: trade-feed-service
+      type: kubernetes/v1/Service
+      source_file: confighub/base/trade-feed-service.yaml
+      port: 18088
+
+  web-gui:
+    deployment:
+      name: web-gui-deployment
+      type: kubernetes/v1/Deployment
+      order: 8
+      layer: frontend
+      source_file: confighub/base/web-gui-deployment.yaml
+      labels:
+        service: web-gui
+        layer: frontend
+        tech: Angular/React
+        order: "8"
+        port: "18080"
+      dependencies:
+        - reference-data
+        - people-service
+        - account-service
+        - position-service
+        - trade-service
+        - trade-feed
+      description: "Web-based user interface"
+      replicas:
+        dev: 1
+        staging: 2
+        prod: 3
+      resources:
+        requests:
+          cpu: 200m
+          memory: 256Mi
+        limits:
+          cpu: 500m
+          memory: 512Mi
+    service:
+      name: web-gui-service
+      type: kubernetes/v1/Service
+      source_file: confighub/base/web-gui-service.yaml
+      port: 18080
+
+  # Networking units
+  ingress:
+    name: ingress
+    type: kubernetes/networking.k8s.io/v1/Ingress
+    order: 9
+    layer: infrastructure
+    source_file: confighub/base/ingress.yaml
+    labels:
+      type: infra
+      order: "9"
+    dependencies:
+      - web-gui
+      - reference-data
+      - people-service
+      - account-service
+      - position-service
+      - trade-service
+      - trade-feed
+    description: "Ingress controller for external access"
+
+# Deployment patterns
+deployment_patterns:
+  ordered_deployment:
+    name: "Ordered Deployment"
+    description: "Deploy services in dependency order (0-9)"
+    script: bin/ordered-apply
+    steps:
+      - order: 0
+        units: [namespace]
+        wait_for: Active
+        timeout: 10s
+      - order: 1
+        units: [reference-data-deployment]
+        wait_for: Running
+        timeout: 60s
+      - order: 2
+        units: [people-service-deployment]
+        wait_for: Running
+        timeout: 60s
+      - order: 3
+        units: [account-service-deployment]
+        wait_for: Running
+        timeout: 60s
+      - order: 4
+        units: [position-service-deployment]
+        wait_for: Running
+        timeout: 60s
+      - order: 5
+        units: [trade-service-deployment]
+        wait_for: Running
+        timeout: 60s
+      - order: 6
+        units: [trade-processor-deployment]
+        wait_for: Running
+        timeout: 60s
+      - order: 7
+        units: [trade-feed-deployment]
+        wait_for: Running
+        timeout: 60s
+      - order: 8
+        units: [web-gui-deployment]
+        wait_for: Running
+        timeout: 60s
+      - order: 9
+        units: [ingress]
+        wait_for: Ready
+        timeout: 30s
+
+  push_upgrade:
+    name: "Push-Upgrade Promotion"
+    description: "Promote changes from one environment to another"
+    script: bin/promote
+    flow:
+      - from: dev
+        to: staging
+        method: push-upgrade
+        approval: automatic
+      - from: staging
+        to: prod
+        method: push-upgrade
+        approval: manual
+        soak_test_duration: 24h
+
+  blue_green:
+    name: "Blue-Green Deployment"
+    description: "Zero-downtime deployment for production"
+    environments: [prod]
+    services: [trade-service, position-service]
+    steps:
+      - Deploy green environment
+      - Validate green environment
+      - Switch ingress to green
+      - Monitor for 5 minutes
+      - Decommission blue (or rollback)
+
+# Worker configuration
+workers:
+  dev:
+    space: "${prefix}-traderx-dev"
+    poll_interval: 10s
+    auto_apply: true
+    cluster_context: kind-traderx-dev
+    namespace: traderx-dev
+    labels:
+      environment: dev
+      auto_deploy: true
+
+  staging:
+    space: "${prefix}-traderx-staging"
+    poll_interval: 30s
+    auto_apply: true
+    cluster_context: kind-traderx-staging
+    namespace: traderx-staging
+    labels:
+      environment: staging
+      soak_test: true
+
+  prod:
+    space: "${prefix}-traderx-prod"
+    poll_interval: 60s
+    auto_apply: false  # Manual approval required
+    cluster_context: gke-traderx-prod
+    namespace: traderx-prod
+    labels:
+      environment: prod
+      critical: true
+      approval_required: true
+
+# Canonical ConfigHub patterns demonstrated
+canonical_patterns:
+  - id: 1
+    name: "Unique Project Naming"
+    implementation: "cub space new-prefix"
+    location: bin/install-base
+    status: implemented
+
+  - id: 2
+    name: "Space Hierarchy"
+    implementation: "base → dev → staging → prod with upstream relationships"
+    location: bin/install-envs
+    status: implemented
+
+  - id: 3
+    name: "Filter Creation"
+    implementation: "7 filters for layer-based and service-based targeting"
+    location: bin/install-base
+    status: implemented
+
+  - id: 4
+    name: "Environment Cloning"
+    implementation: "cub unit create --dest-space --upstream-unit"
+    location: bin/install-envs
+    status: implemented
+
+  - id: 5
+    name: "Version Promotion"
+    implementation: "cub run set-image-reference + push-upgrade"
+    location: bin/promote
+    status: implemented
+
+  - id: 6
+    name: "Sets for Grouping"
+    implementation: "critical-services, data-services sets"
+    location: bin/install-base
+    status: implemented
+
+  - id: 7
+    name: "Event-Driven"
+    implementation: "ConfigHub workers with auto-apply"
+    location: bin/setup-worker
+    status: implemented
+
+  - id: 8
+    name: "ConfigHub Functions"
+    implementation: "cub run commands for operations"
+    location: bin/promote
+    status: implemented
+
+  - id: 9
+    name: "Changesets"
+    implementation: "Atomic multi-service updates with rollback"
+    location: docs/DEPLOYMENT-PATTERNS.md
+    status: documented
+
+  - id: 10
+    name: "Lateral Promotion"
+    implementation: "Region-by-region rollout (future)"
+    location: ARCHITECTURE-DESIGN.md
+    status: planned
+
+  - id: 11
+    name: "Revision Management"
+    implementation: "Full history tracking, rollback to revision N"
+    location: ConfigHub built-in
+    status: implemented
+
+  - id: 12
+    name: "Link Management"
+    implementation: "Service-to-infrastructure links (future)"
+    location: ARCHITECTURE-DESIGN.md
+    status: planned
+
+# Resource requirements
+resources:
+  confighub:
+    spaces: 5
+    units_per_environment: 17
+    total_units: 85  # 17 * 5 spaces
+    filters: 7
+    sets: 2
+    workers: 3
+
+  kubernetes:
+    dev:
+      nodes: 2
+      cpu: "8 cores"
+      memory: "16 GB"
+      storage: "50 GB"
+      pods: 16
+    staging:
+      nodes: 3
+      cpu: "12 cores"
+      memory: "24 GB"
+      storage: "100 GB"
+      pods: 16
+    prod:
+      nodes: 5
+      cpu: "20 cores"
+      memory: "40 GB"
+      storage: "200 GB"
+      pods: 24  # Includes blue-green
+
+  estimated_costs:
+    dev: "$65/month"
+    staging: "$100/month"
+    prod: "$200/month"
+    total: "$365/month"
+
+# Quality gates
+quality_gates:
+  phase1:
+    name: "Infrastructure Setup"
+    criteria:
+      - "5 spaces created"
+      - "17 units in base space"
+      - "7 filters operational"
+      - "Environment hierarchy visible"
+
+  phase2:
+    name: "Dev Deployment"
+    criteria:
+      - "8/8 services Running"
+      - "Health checks passing"
+      - "Worker auto-applying"
+      - "Integration tests passed"
+
+  phase3:
+    name: "Environment Promotion"
+    criteria:
+      - "Staging matches dev"
+      - "Production deployed"
+      - "Rollback tested"
+      - "Zero downtime confirmed"
+
+# Monitoring and alerting
+monitoring:
+  metrics:
+    - Service uptime (per service)
+    - Request latency (p50, p95, p99)
+    - Error rate (per service)
+    - Resource utilization (CPU, memory)
+    - Trade volume (business metric)
+    - Cost per transaction (FinOps metric)
+
+  alerts:
+    critical:
+      - name: "Trade Service Down"
+        condition: "up{service=trade-service} == 0"
+        duration: 30s
+        action: PagerDuty
+      - name: "Reference Data Unavailable"
+        condition: "up{service=reference-data} == 0"
+        duration: 30s
+        action: PagerDuty
+
+    high:
+      - name: "High Error Rate"
+        condition: "rate(http_requests_total{status=~'5..'}[5m]) > 0.05"
+        duration: 2m
+        action: Slack
+
+    medium:
+      - name: "High CPU Usage"
+        condition: "container_cpu_usage > 0.8"
+        duration: 10m
+        action: Slack
+
+# Compliance and audit
+compliance:
+  regulations:
+    - SEC Rule 17a-4 (Audit trail)
+    - FINRA 4511 (Change management)
+    - SOC 2 (Security and availability)
+    - PCI-DSS (Payment card data)
+
+  audit_trail:
+    - All ConfigHub changes tracked
+    - Full revision history maintained
+    - Rollback capability to any revision
+    - Immutable audit logs
+
+# Documentation
+documentation:
+  architecture: ARCHITECTURE-DESIGN.md
+  implementation_plan: IMPLEMENTATION-PLAN.md
+  risk_matrix: RISK-MATRIX.md
+  success_criteria: SUCCESS-CRITERIA.md
+  deployment_patterns: docs/DEPLOYMENT-PATTERNS.md
+  runbooks: docs/RUNBOOKS.md
