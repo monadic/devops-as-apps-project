@@ -239,7 +239,11 @@ BulkPatchUnits(BulkPatchParams{
     Upgrade: true,
 })
 
-// ❌ WRONG - Variants don't exist
+// NOTE: Variants exist as a CONCEPT (different customizations via upstream/downstream)
+// Example: US variant (3 replicas), EU variant (5 replicas), Asia variant (2 replicas)
+// All inherit from base unit but with different customizations
+
+// ❌ WRONG - No GetVariant() API exists (variants are units with UpstreamUnitID)
 variant := GetVariant("aws-variant")
 ```
 
