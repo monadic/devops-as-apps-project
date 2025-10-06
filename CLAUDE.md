@@ -57,9 +57,70 @@ Every project must include a `test/` folder with comprehensive test coverage:
 **Session Startup Protocol:**
 At the beginning of each new session, Claude must:
 1. Identify all test suites in the project
-2. Offer to run full test validation
-3. Report test results before proceeding with new work
-4. Flag any failing tests for resolution
+2. Check infrastructure requirements (see below)
+3. Offer infrastructure setup or test validation options
+4. Report test results before proceeding with new work
+5. Flag any failing tests for resolution
+
+**Infrastructure Requirements for Testing:**
+
+Tests have different infrastructure dependencies:
+
+**Unit Tests** (No infrastructure required):
+- Script syntax validation
+- YAML manifest validation
+- Code quality checks
+- Run time: < 30 seconds
+
+**Integration Tests** (Infrastructure required):
+- ConfigHub authentication (`cub auth login`)
+- ConfigHub spaces and units (`bin/install-base`, `bin/install-envs`)
+- Kubernetes cluster (`kind create cluster` or existing)
+- ConfigHub worker (`bin/setup-worker dev`)
+- Run time: 2-5 minutes
+
+**End-to-End Tests** (Full deployment required):
+- All integration test requirements
+- Deployed application (`bin/ordered-apply dev`)
+- Run time: 5-10 minutes
+
+**Infrastructure Setup Protocol:**
+
+Before running tests, Claude must:
+1. Check if infrastructure exists
+2. Offer setup options:
+   - Option A: Set up infrastructure first, then run tests
+   - Option B: Run unit tests only (no infrastructure)
+   - Option C: Skip tests and proceed with work
+3. If setup requested, execute in order:
+   ```bash
+   # ConfigHub setup
+   cub auth login
+   bin/install-base
+   bin/install-envs
+
+   # Kubernetes setup (if cluster available)
+   bin/setup-worker dev
+   bin/ordered-apply dev
+
+   # Then run tests
+   ./test/run-all-tests.sh
+   ```
+
+**Infrastructure Check Commands:**
+```bash
+# Check ConfigHub auth
+cub auth status &>/dev/null
+
+# Check if project initialized
+[ -f ".cub-project" ]
+
+# Check Kubernetes cluster
+kubectl cluster-info &>/dev/null
+
+# Check if worker running
+kubectl get pods -n confighub -l app=confighub-worker &>/dev/null
+```
 
 **Test Folder Structure:**
 ```
