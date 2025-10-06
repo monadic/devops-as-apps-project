@@ -32,6 +32,60 @@ Label any uncertain content explicitly. Confirm that work is based on:
 - Information provided by the user to this project
 - Verified sources only
 
+### 4. Comprehensive Testing Requirements
+
+Every project must include a `test/` folder with comprehensive test coverage:
+
+**Required Test Types:**
+- Unit tests for all components
+- ConfigHub API integration tests
+- CLI command tests (cub)
+- SDK usage tests
+- Worker connection and apply verification tests
+- GUI behavior tests
+- ASCII table and drawing output validation
+- End-to-end workflow tests
+- Regression tests
+- User acceptance tests for applications and flows
+
+**Test Documentation:**
+- All tests clearly documented in test folder README
+- Claude agent testing strategies documented in .md files
+- Test execution procedures and expected results
+- Coverage reports and quality metrics
+
+**Session Startup Protocol:**
+At the beginning of each new session, Claude must:
+1. Identify all test suites in the project
+2. Offer to run full test validation
+3. Report test results before proceeding with new work
+4. Flag any failing tests for resolution
+
+**Test Folder Structure:**
+```
+test/
+├── README.md                    # Test documentation
+├── unit/                        # Unit tests
+│   ├── components/
+│   ├── confighub-api/
+│   ├── cli/
+│   ├── sdk/
+│   └── workers/
+├── integration/                 # Integration tests
+│   ├── worker-apply/
+│   └── api-integration/
+├── ui/                          # UI and output tests
+│   ├── gui/
+│   ├── ascii-tables/
+│   └── dashboards/
+├── e2e/                         # End-to-end tests
+├── regression/                  # Regression tests
+├── acceptance/                  # User acceptance tests
+└── strategies/                  # Claude agent test strategies
+    ├── TESTING-STRATEGY.md
+    └── COVERAGE-REQUIREMENTS.md
+```
+
 ## 🚀 SETUP REQUIREMENTS (DO FIRST)
 
 Before working on this project, Claude must complete these steps:
