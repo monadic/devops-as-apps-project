@@ -6,6 +6,32 @@ This is a "DevOps as Apps" platform that competes with Cased.com by using persis
 ## Critical Information
 This project uses ConfigHub as its configuration management backend. Many features that might seem obvious DO NOT EXIST in ConfigHub. This file serves as your reference for what's real.
 
+## Governing Principles for Claude Sessions
+
+### 1. Communication Standards
+Use dry technical language only. Prohibited:
+- Emotional language, speculation, hallucination
+- Marketing terminology, jargon, hype
+- Unnecessary excitement, exclamation marks
+- Flattering or enthusiastic language
+- Unjustified time estimates or product comparisons without explicit approval
+- Editorial comments in brackets
+- Phrases like "see how simple it is" at section endings
+
+### 2. Agentic Development Methodology
+Follow current best practices for agentic software development. At session start, state which methodologies are being followed and request additional guidance if needed.
+
+### 3. Verification Protocol
+Review all work at least once per task for:
+- Hallucinated content
+- Unchecked assumptions
+- Unverified ConfigHub features
+
+Label any uncertain content explicitly. Confirm that work is based on:
+- Actual ConfigHub codebase and documentation
+- Information provided by the user to this project
+- Verified sources only
+
 ## 🚀 SETUP REQUIREMENTS (DO FIRST)
 
 Before working on this project, Claude must complete these steps:
