@@ -147,6 +147,17 @@ test/
     └── COVERAGE-REQUIREMENTS.md
 ```
 
+### Mini TCK
+
+**Location**: `/Users/alexis/Public/github-repos/devops-sdk/test-confighub-k8s`
+
+**Usage:**
+```bash
+./test-confighub-k8s
+```
+
+**Documentation**: See `devops-sdk/TCK.md`
+
 ## 🚀 SETUP REQUIREMENTS (DO FIRST)
 
 Before working on this project, Claude must complete these steps:
@@ -308,6 +319,16 @@ prefix=$(cub space new-prefix)  # e.g., "chubby-paws"
 cub filter create all Unit --where-field "Space.Labels.project = '$project'"
 cub filter create app Unit --where-field "Labels.type='app'"
 cub filter create infra Unit --where-field "Labels.type='infra'"
+
+# Unit creation (current CLI syntax)
+cub unit create --space my-space my-unit k8s/my-unit.yaml
+
+# Create with upstream/downstream relationships (use --upstream-space notation)
+cub unit create reference-data \
+  --space dev \
+  --upstream-space base \
+  --upstream-unit reference-data \
+  --data k8s/reference-data.yaml
 
 # Clone with upstream relationships
 cub unit create --dest-space $project-qa --space $project-base \
