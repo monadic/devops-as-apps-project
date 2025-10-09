@@ -73,69 +73,15 @@ Note that drift detection is a common use case in DevOps when declarative tools 
 
 ## 🎯 Live Examples
 
-Each example has its own docs and quick start for new users.  Below we summarise a couple of the examples for intro purposes.
+### Production Examples
 
-### 1. TraderX - Production Application Deployment
+- **[DevOps Examples Repository](https://github.com/monadic/devops-examples)** - Production examples of DevOps as Apps
+  - drift-detector, cost-optimizer, cost-impact-monitor
+- **[TraderX Repository](https://github.com/monadic/traderx)** - Full production deployment (8 microservices, 4 environments)
+  - Complete ConfigHub deployment of FINOS TraderX trading platform
+  - Demonstrates all 12 canonical patterns with comprehensive testing and documentation
 
-Complete ConfigHub deployment of FINOS TraderX trading platform demonstrating all 12 canonical patterns.
-
-**Location**: `/Users/alexis/traderx/` (this repository)
-
-**Status**: ConfigHub infrastructure complete, Kubernetes deployment ready (pending Docker)
-
-**What it demonstrates:**
-- Full production application (8 microservices)
-- Complete environment hierarchy (base → dev → staging → prod)
-- 60 ConfigHub units across all environments
-- Advanced deployment scripts (health-check, rollback, validate-deployment, blue-green-deploy)
-- Multi-agent development workflow
-- Comprehensive testing (88.6% coverage)
-- Security and code reviews completed
-
-```bash
-cd /Users/alexis/traderx/
-
-# Quick start (see QUICKSTART.md for details)
-bin/install-base      # Create ConfigHub infrastructure
-bin/install-envs      # Set up environment hierarchy
-bin/ordered-apply dev # Deploy all 8 services
-bin/validate-deployment dev  # Comprehensive validation
-
-# Access the application
-kubectl port-forward -n traderx-dev svc/web-gui 18080:18080
-open http://localhost:18080
-```
-
-**Key Features:**
-- ConfigHub-native deployment (no kubectl for state changes)
-- Dependency-ordered deployment
-- Zero-downtime blue-green deployments
-- Comprehensive health validation
-- Automatic rollback capabilities
-- Worker support for auto-deployment
-- Full audit trail via ConfigHub
-- Production-ready scripts and documentation
-
-**Documentation:**
-- [README.md](/Users/alexis/traderx/README.md) - Project overview
-- [QUICKSTART.md](/Users/alexis/traderx/QUICKSTART.md) - 15-minute deployment guide
-- [RUNBOOK.md](/Users/alexis/traderx/RUNBOOK.md) - Operational procedures
-- [CHANGELOG.md](/Users/alexis/traderx/CHANGELOG.md) - Version history
-- [SECURITY-REVIEW.md](/Users/alexis/traderx/SECURITY-REVIEW.md) - Security assessment (68/100 for dev)
-- [CODE-REVIEW.md](/Users/alexis/traderx/CODE-REVIEW.md) - Code quality review (82/100)
-- [TEST-RESULTS.md](/Users/alexis/traderx/TEST-RESULTS.md) - Test coverage (88.6%)
-
-**Metrics:**
-- **Security Score**: 68/100 (development), remediation roadmap defined
-- **Code Quality**: 82/100
-- **Test Coverage**: 88.6%
-- **ConfigHub Pattern Adherence**: 95/100
-- **Deployment Time**: ~5 minutes (target: <10 minutes)
-- **Rollback Time**: 15-30 seconds (target: <30 seconds)
-
----
-
-### 2. Drift Detector
+### 1. Drift Detector
 
 Continuous drift detection with auto-correction:
 
@@ -163,7 +109,7 @@ See the [drift-detector README](https://github.com/monadic/devops-examples/tree/
 
 ---
 
-### 3. Cost Optimizer
+### 2. Cost Optimizer
 
 AI-powered cost optimization:
 
@@ -272,58 +218,6 @@ See [monadic/devops-sdk](https://github.com/monadic/devops-sdk) for the Go SDK u
 - **Claude API**: [docs.anthropic.com](https://docs.anthropic.com)
 - **Kubernetes**: [kubernetes.io/docs](https://kubernetes.io/docs)
 - **Examples**: See each example's Troubleshooting section
-
-## 🤖 Multi-Agent Development Workflow
-
-The TraderX example demonstrates a novel multi-agent development approach where specialized AI agents collaborate to deliver a complete deployment:
-
-### Agent Collaboration Results
-
-**Project**: TraderX ConfigHub Deployment (`mellow-muzzle-traderx`)
-
-| Agent | Role | Deliverables | Quality Score |
-|-------|------|--------------|---------------|
-| **Planning Agent** | Project planning | Implementation plan, risk matrix, success criteria | N/A |
-| **Architecture Agent** | Technical design | Architecture design, deployment patterns | N/A |
-| **Code Generator** | Implementation | 14 scripts, 17 manifests, test suites | 82/100 |
-| **Security Review** | Security assessment | 25 findings, remediation roadmap | 68/100 (dev) |
-| **Code Review** | Quality analysis | Code review, best practices validation | 82/100 |
-| **Testing Agent** | Testing & validation | Test suites, coverage report | 88.6% coverage |
-| **Deployment Agent** | Infrastructure deployment | 5 spaces, 60 units created | Complete |
-| **Documentation Agent** | Documentation | 4 new docs, updates to existing | Complete |
-
-### Multi-Agent Workflow Characteristics
-
-Implementation characteristics observed:
-1. Specialized agents for planning, architecture, code generation, security, testing, deployment, and documentation
-2. Multiple review stages between agent handoffs
-3. Security, code quality, and testing performed by separate agents
-4. Documentation generated and updated by documentation agent
-5. Sequential agent execution with each building on previous work
-
-**Final Deliverables:**
-- 60 ConfigHub units across 5 environments
-- 14 production-ready deployment scripts
-- 17 Kubernetes manifests with security hardening
-- 88.6% test coverage
-- Comprehensive documentation (README, QUICKSTART, RUNBOOK, CHANGELOG)
-- Security assessment with remediation roadmap
-- Code quality review with improvement recommendations
-
-### Implementation Notes
-
-Observations from execution:
-- Structured agent handoffs with defined deliverables
-- Review agents identified issues before deployment
-- Documentation consolidated by dedicated agent
-- ConfigHub-only pattern validated across multiple agents
-- Integration testing delayed due to Docker dependency
-- Security recommendations provided post-implementation
-- Sequential execution used; parallel execution possible for independent tasks
-
-See `/Users/alexis/traderx/` for complete multi-agent execution results.
-
----
 
 ## 🤝 Contributing
 
