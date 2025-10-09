@@ -32,6 +32,33 @@ Label any uncertain content explicitly. Confirm that work is based on:
 - Information provided by the user to this project
 - Verified sources only
 
+**Config File Validation (MANDATORY):**
+
+Before committing any YAML or JSON configuration files, MUST validate:
+
+```bash
+# YAML syntax validation
+python3 -c 'import yaml, sys; yaml.safe_load(open("file.yaml"))' || echo "Invalid YAML"
+
+# JSON syntax validation
+jq empty file.json || echo "Invalid JSON"
+
+# Kubernetes YAML validation
+- Check apiVersion and kind present
+- Check metadata.name present
+- Check spec section appropriate for resource type
+- Verify resource limits defined
+- Verify security contexts present
+- Verify health probes for deployments
+
+# ConfigHub unit validation
+- Verify Labels follow project conventions
+- Verify Annotations include Description
+- Verify Layer label for deployment ordering
+```
+
+Never commit invalid or unvalidated configuration files.
+
 ### 4. Comprehensive Testing Requirements
 
 Every project must include a `test/` folder with comprehensive test coverage:
@@ -106,6 +133,45 @@ Before running tests, Claude must:
    # Then run tests
    ./test/run-all-tests.sh
    ```
+
+**ConfigHub Standard Test Infrastructure:**
+
+All projects MUST use ConfigHub standard testing conventions:
+
+1. **Test Library** (`test/scripts/test-lib.sh`):
+   - Copy from: https://github.com/confighubai/confighub/blob/main/test/scripts/test-lib.sh
+   - Provides: `createSpace`, `verifyEntityWithinSpaceExists`, `checkEntityWithinSpaceListLength`
+   - Usage: `source "$ROOTDIR/test/scripts/test-lib.sh"`
+
+2. **Test Data** (`test-data/`):
+   - `metadata.json` - Default labels/annotations for units
+   - `space-metadata.json` - Default space metadata
+   - YAML fixtures for each service/component
+   - Reference: https://github.com/confighubai/confighub/tree/main/test-data
+
+3. **YAML Validation** (REQUIRED for all config files):
+   ```bash
+   # Validate syntax
+   python3 -c 'import yaml, sys; yaml.safe_load(sys.stdin)' < file.yaml
+
+   # Validate Kubernetes compliance
+   - apiVersion and kind present
+   - metadata.name present
+   - Valid namespace references
+
+   # Validate best practices
+   - Resource limits and requests
+   - Security contexts (runAsNonRoot, readOnlyRootFilesystem)
+   - Health probes (liveness and readiness)
+   - Required labels (app.kubernetes.io/name, app.kubernetes.io/part-of)
+   ```
+
+4. **Test Script Standards**:
+   - Use `#!/bin/bash -x` and `set -e`
+   - Source test-lib.sh from ROOTDIR
+   - Use random space names for isolation: `SPACE="test$RANDOM"`
+   - Implement cleanup with trap handlers
+   - Save output to `$OUTDIR` for debugging
 
 **Infrastructure Check Commands:**
 ```bash
