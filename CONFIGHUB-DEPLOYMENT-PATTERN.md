@@ -640,10 +640,10 @@ cub unit refresh your-app-deployment --space $project-staging
 ## Examples
 
 ### Drift Detector
-See `/Users/alexisrichardson/github-repos/devops-examples/drift-detector/` for a complete implementation.
+See `/Users/alexis/Public/github-repos/devops-examples/drift-detector/` for a complete implementation.
 
 ### Global App Pattern
-Reference: `/Users/alexisrichardson/examples-internal/global-app/` shows the original pattern we're following.
+Reference: `/Users/alexis/Public/github-repos/confighub-examples/global-app/` shows the original pattern we're following.
 
 ## Next Steps
 

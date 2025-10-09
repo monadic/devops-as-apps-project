@@ -232,9 +232,9 @@ Before working on this project, Claude must complete these steps:
 ✅ **COMPLETED**: Successfully accessed and cloned latest ConfigHub repositories:
 
 **Local cloned repositories** (always use these for latest code):
-- **Main repo**: `/Users/alexisrichardson/github-repos/confighub-latest/`
-- **Documentation**: `/Users/alexisrichardson/github-repos/confighub-docs/`
-- **Examples**: `/Users/alexisrichardson/github-repos/confighub-examples/`
+- **Main repo**: `/Users/alexis/Public/github-repos/confighub-latest/`
+- **Documentation**: `/Users/alexis/Public/github-repos/confighub-docs/`
+- **Examples**: `/Users/alexis/Public/github-repos/confighub-examples/`
 
 **GitHub URLs** (accessible via git, but may be private via web):
 - **Main repo**: https://github.com/confighubai/confighub
@@ -267,13 +267,13 @@ export CLAUDE_API_KEY="your-claude-api-key-here"
 
 ### 4. Project Documentation Review
 Review ALL documentation and files in this project folder and subfolders:
-- `/Users/alexisrichardson/github-repos/devops-as-apps-project/`
+- `/Users/alexis/Public/github-repos/devops-as-apps-project/`
 - All `docs/` files and subdirectories
 - All example implementations and patterns
 
 **CRITICAL**: Complete steps 1-4 before proceeding with any development work.
 
-## 🤖 IMPORTANT: Claude AI Integration (Updated 2025-09-23)
+## 🤖 IMPORTANT: Claude AI Integration (Updated 2025-10-09)
 
 **All DevOps examples now require Claude AI by default** for intelligent analysis:
 
@@ -347,8 +347,8 @@ See `docs/CONFIGHHUB-DEPLOYMENT-PATTERN.md` for implementation details.
 ## How to Continue This Project
 
 ### Step 1: Read Canonical Global-App Implementation (CRITICAL)
-- **Global-app (Latest)**: `/Users/alexisrichardson/github-repos/confighub-examples/global-app/`
-  - **Backup reference**: `/Users/alexisrichardson/examples-internal/global-app/`
+- **Global-app (Latest)**: `/Users/alexis/Public/github-repos/confighub-examples/global-app/`
+  - **Backup reference**: `/Users/alexis/Public/github-repos/confighub-examples/global-app/`
   - This is the CANONICAL reference for all ConfigHub patterns
   - Study `bin/install-base`, `bin/install-envs`, `bin/new-app-env`
   - Uses `cub space new-prefix` for unique naming
@@ -366,15 +366,15 @@ See `docs/CONFIGHHUB-DEPLOYMENT-PATTERN.md` for implementation details.
 | **Bulk Operations** | Single workflow | Sets/Filters across environments |
 
 ### Step 3: Read ConfigHub Source Code
-- **ConfigHub repo (Latest)**: `/Users/alexisrichardson/github-repos/confighub-latest/`
-- **Backup repo**: `/Users/alexisrichardson/github-repos/confighub/`
+- **ConfigHub repo (Latest)**: `/Users/alexis/Public/github-repos/confighub-latest/`
+- **Backup repo**: `/Users/alexis/Public/github-repos/confighub/`
 - **Key files to read**:
   - `internal/models/set.go` - Understand Sets (REAL feature)
   - `internal/models/filter.go` - Understand Filters (REAL feature with WHERE clauses)
   - `internal/models/unit.go` - Unit operations and relationships
   - `public/cmd/cub/` - All 150+ CLI commands
   - `public/openapi/goclient-new/models.gen.go` - API types
-- **Search patterns**: `grep -r "BulkPatch" /Users/alexisrichardson/github-repos/confighub-latest/`
+- **Search patterns**: `grep -r "BulkPatch" /Users/alexis/Public/github-repos/confighub-latest/`
 
 ### Step 4: Canonical ConfigHub Commands (from global-app)
 ```bash
@@ -418,12 +418,12 @@ cub unit tree --node=space --filter $(bin/proj)/app --space '*'
 - **Development guide**: `DEVELOPMENT.md` - Multi-repo setup
 
 ### Step 6: Review Current Implementation
-- **SDK**: `/Users/alexisrichardson/github-repos/devops-sdk/`
+- **SDK**: `/Users/alexis/Public/github-repos/devops-sdk/`
   - `confighub.go` - Real ConfigHub client with Sets, Filters, bulk ops
   - `app.go` - Base DevOps app framework
   - `claude.go` - Claude integration
   - `kubernetes.go` - K8s utilities
-- **Drift Detector**: `/Users/alexisrichardson/github-repos/devops-examples/drift-detector/`
+- **Drift Detector**: `/Users/alexis/Public/github-repos/devops-examples/drift-detector/`
   - `main.go` - Full implementation using Sets/Filters/informers
   - `main_test.go` - Comprehensive tests
   - `integration_test.go` - Real ConfigHub API tests
@@ -526,7 +526,7 @@ Every DevOps app MUST deploy itself through ConfigHub:
 
 ```bash
 # Step 1: Create ConfigHub structure (canonical pattern)
-cd /Users/alexisrichardson/github-repos/devops-examples/{app-name}
+cd /Users/alexis/Public/github-repos/devops-examples/{app-name}
 bin/install-base      # Creates unique prefix, spaces, filters, base units
 bin/install-envs      # Creates environment hierarchy
 
@@ -628,7 +628,7 @@ export CLAUDE_API_KEY="your-claude-key"
 
 ### Project Structure
 ```
-/Users/alexisrichardson/github-repos/
+/Users/alexis/Public/github-repos/
 ├── confighub/                    # ConfigHub source (READ-ONLY)
 ├── devops-as-apps-project/       # Planning and docs
 │   ├── docs/                     # All planning documents
@@ -651,14 +651,14 @@ export CLAUDE_API_KEY="your-claude-key"
 - https://github.com/monadic/devops-examples
 
 ### Reference Implementations
-- `/Users/alexisrichardson/examples-internal/global-app/` - ConfigHub usage patterns
+- `/Users/alexis/Public/github-repos/confighub-examples/global-app/` - ConfigHub usage patterns
 - Look for `bin/install-base` and `bin/install-envs` scripts
 
 ### Testing Commands
 ```bash
 # Build everything
-cd /Users/alexisrichardson/github-repos/devops-sdk && go build ./...
-cd /Users/alexisrichardson/github-repos/devops-examples/drift-detector && go build .
+cd /Users/alexis/Public/github-repos/devops-sdk && go build ./...
+cd /Users/alexis/Public/github-repos/devops-examples/drift-detector && go build .
 
 # Run tests
 go test -v                           # Unit tests
@@ -674,7 +674,7 @@ go test -tags=integration -v
 - `docs/CONFIGHUB-ACTUAL-FEATURES.md` - API reference (CRITICAL)
 - `docs/DEVOPS-AS-APPS-MASTER-PLAN.md` - Master implementation plan
 - `docs/DEVOPS-AS-APPS-PLAN.md` - Detailed guide
-- `/Users/alexisrichardson/examples-internal/global-app/README.md` - Reference patterns
+- `/Users/alexis/Public/github-repos/confighub-examples/global-app/README.md` - Reference patterns
 
 ## Context from Previous Sessions
 This project started as analysis of Cased.com, then evolved into building a better competitor using ConfigHub. The key insight was that persistent DevOps applications are better than ephemeral workflows. We discovered many ConfigHub features were hallucinated and had to rewrite everything to use only real APIs from the source code.
