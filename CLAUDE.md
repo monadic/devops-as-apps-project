@@ -1,7 +1,7 @@
 # Claude Code Context for DevOps as Apps Project
 
 ## Project Overview
-This is a "DevOps as Apps" platform that competes with Cased.com by using persistent Kubernetes applications (not ephemeral workflows) with ConfigHub + SDK + Claude as the core platform. The goal is to build DevOps automation tools as long-running apps.
+This is a "DevOps as Apps" experiment that competes with agentic workflows by using persistent Kubernetes applications instead, with ConfigHub + SDK + Claude as the core platform. The goal is to build DevOps automation tools as long-running apps.
 
 ## Critical Information
 This project uses ConfigHub as its configuration management backend. Many features that might seem obvious DO NOT EXIST in ConfigHub. This file serves as your reference for what's real.
@@ -69,7 +69,7 @@ Tests have different infrastructure dependencies:
 **Unit Tests** (No infrastructure required):
 - Script syntax validation
 - YAML manifest validation
-- Code quality checks
+- Code quality checks (include code review + config review)
 - Run time: < 30 seconds
 
 **Integration Tests** (Infrastructure required):
@@ -288,8 +288,8 @@ See `docs/CONFIGHHUB-DEPLOYMENT-PATTERN.md` for implementation details.
   - Uses `cub space new-prefix` for unique naming
   - Full environment hierarchy: base → qa → staging → prod
 
-### Step 2: Understand Our Competitive Advantages
-| Feature | Cased (Workflows) | Our Apps (ConfigHub + SDK) |
+### Step 2: DevOps Apps Advantages
+| Feature | Agent Workflows | Our Apps (ConfigHub + SDK) |
 |---------|------------------|---------------------------|
 | **Execution** | Ephemeral, exits | Persistent, continuous with informers |
 | **Environment Cloning** | "Killer branch deploy" | Full hierarchy with `--upstream-unit` |
