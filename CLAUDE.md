@@ -59,6 +59,119 @@ jq empty file.json || echo "Invalid JSON"
 
 Never commit invalid or unvalidated configuration files.
 
+## ConfigHub CLI Mental Model (MANDATORY)
+
+**Before writing ANY cub command, understand this model:**
+
+### Command Structure
+```bash
+cub <entity> <verb> [unit-name] [flags]
+```
+
+### Three Types of Flags
+
+**1. Mode Flags** - Change command behavior, REQUIRE companions
+- `--patch` requires one of: `--from-stdin`, `--filename`, `--restore`, `--upgrade`, `--merge-source`, `--label`, `--delete-gate`, `--destroy-gate`, or `--changeset`
+- `--upgrade` requires: `--patch`
+- `--from-stdin` requires: data piped via stdin
+
+**2. Required Flags** - Must be present
+- `--space <space>` - Required for most unit operations
+- `--where <clause>` - Required for bulk operations with filter targeting
+
+**3. Parameter Flags** - Optional modifiers
+- `--label key=value`
+- `--timeout 5m`
+- `--format json`
+
+### How to Read Help Output (MANDATORY before using any command)
+
+```bash
+CONFIGHUB_AGENT=1 cub <entity> <verb> --help
+```
+
+Help output shows:
+- **Required flags** (marked as required)
+- **Flag combinations** (what companions mode flags need)
+- **Examples** (copy these patterns exactly)
+- **WHERE clause grammar** (for --where flag)
+
+### Common Mistakes to Avoid
+
+❌ **Using mode flags without required companions:**
+```bash
+cub unit update myunit --patch '{"spec":{}}' # WRONG: --patch needs companion
+cub unit update myunit --patch --data '{}' # WRONG: --data is not a valid companion
+```
+
+✅ **Correct patterns:**
+```bash
+# Monolithic Data update (replace entire config)
+echo '{"spec":{}}' | cub unit update myunit --from-stdin --space dev
+cub unit update myunit --filename newdata.yaml --space dev
+
+# Fine-grained Data update (specific fields)
+cub function do --space dev --where "Slug = 'myunit'" set-replicas 3
+
+# Metadata update (labels, annotations)
+cub unit update myunit --patch --label version=2.0 --space dev
+
+# Push-upgrade (propagate changes from upstream)
+cub unit update --patch --upgrade --space staging
+```
+
+## MANDATORY: Before Using ANY cub Command
+
+**BLOCKING REQUIREMENT** - Do these steps EVERY TIME before writing a cub command:
+
+### Step 1: Read Help (MANDATORY)
+```bash
+CONFIGHUB_AGENT=1 cub <entity> <verb> --help
+```
+
+Example for unit update:
+```bash
+CONFIGHUB_AGENT=1 cub unit update --help
+```
+
+### Step 2: Identify Required Flags and Companions
+
+From help output, note:
+- What flags are required? (usually `--space`)
+- Is this a mode flag? (`--patch`, `--upgrade`, etc.)
+- What companions does this mode flag require?
+- Are there examples? (copy the pattern exactly)
+
+### Step 3: Test in Throwaway Space First
+
+**NEVER commit untested cub commands.** Test first:
+
+```bash
+# Create test space
+TEST_SPACE="test$RANDOM"
+cub space create $TEST_SPACE
+
+# Test your command
+cub unit create myunit --space $TEST_SPACE data.yaml
+
+# If it works, adapt for real use
+# If it fails, read error and fix
+
+# Cleanup
+cub space delete $TEST_SPACE
+```
+
+### Step 4: Use test-lib.sh Functions
+
+For scripts, use standard testing functions:
+```bash
+source "$ROOTDIR/test/scripts/test-lib.sh"
+
+createSpace "$SPACE"
+# ... your commands ...
+verifyEntityWithinSpaceExists "unit" "$UNIT" "$SPACE"
+```
+
 ### 4. Comprehensive Testing Requirements
 
 Every project must include a `test/` folder with comprehensive test coverage:
@@ -213,14 +326,30 @@ test/
     └── COVERAGE-REQUIREMENTS.md
 ```
 
-### Mini TCK
+### Mini TCK (MANDATORY - Run Before Any Development)
 
 **Location**: `/Users/alexis/Public/github-repos/devops-sdk/test-confighub-k8s`
 
+**BLOCKING REQUIREMENT**: Run this BEFORE starting any development work.
+
 **Usage:**
 ```bash
+cd /Users/alexis/Public/github-repos/devops-sdk
 ./test-confighub-k8s
 ```
+
+**Expected Results:**
+- Exit code 0 (success)
+- All basic operations pass (space create, unit create, apply, destroy)
+- ConfigHub API connection verified
+- Environment correctly configured
+
+**If Mini TCK fails:**
+1. Do NOT proceed with development
+2. Fix authentication issues (`cub auth login`)
+3. Check API URL configuration
+4. Verify network connectivity
+5. Re-run Mini TCK until it passes
 
 **Documentation**: See `devops-sdk/TCK.md`
 
@@ -271,7 +400,62 @@ Review ALL documentation and files in this project folder and subfolders:
 - All `docs/` files and subdirectories
 - All example implementations and patterns
 
-**CRITICAL**: Complete steps 1-4 before proceeding with any development work.
+### 5. Understand ConfigHub CLI Model (MANDATORY)
+
+Before proceeding with development, understand the CLI mental model:
+
+**Step 5.1: Read Overview Help**
+```bash
+CONFIGHUB_AGENT=1 cub --help-overview
+```
+
+This shows:
+- All entities (space, unit, filter, set, link, changeset, target, worker)
+- All verbs per entity (create, update, apply, destroy, list, get)
+- WHERE clause EBNF grammar
+- Common patterns and examples
+
+**Step 5.2: Read CLI Mental Model Section**
+
+Read the "ConfigHub CLI Mental Model" section in this document (above).
+
+Understand:
+- Command structure: `cub <entity> <verb> [unit-name] [flags]`
+- Mode flags (require companions): `--patch`, `--upgrade`, `--from-stdin`
+- Required flags: `--space`, `--where`
+- Parameter flags: `--label`, `--timeout`, `--format`
+
+**Step 5.3: Test Basic Commands**
+
+Test in throwaway space:
+```bash
+TEST_SPACE="test$RANDOM"
+cub space create $TEST_SPACE
+
+# Test unit create
+echo "test: data" | cub unit create test-unit --from-stdin --space $TEST_SPACE
+
+# Test unit get
+cub unit get test-unit --space $TEST_SPACE
+
+# Test unit list
+cub unit list --space $TEST_SPACE
+
+# Cleanup
+cub space delete $TEST_SPACE
+```
+
+**Step 5.4: Run Mini TCK**
+
+Verify setup is correct:
+```bash
+cd /Users/alexis/Public/github-repos/devops-sdk
+./test-confighub-k8s
+```
+
+**Do NOT proceed until all 4 sub-steps complete successfully.**
+
+**CRITICAL**: Complete steps 1-5 before proceeding with any development work.
 
 ## 🤖 IMPORTANT: Claude AI Integration (Updated 2025-10-09)
 
@@ -312,7 +496,7 @@ ENABLE_CLAUDE=false ./run.sh
 ### Drift Correction Pattern (REQUIRED)
 ```bash
 # ✅ CORRECT - Use ConfigHub to fix drift
-cub unit update backend-api-unit --patch --data '{"spec":{"replicas":3}}'
+echo '{"spec":{"replicas":3}}' | cub unit update backend-api-unit --from-stdin --space drift-test-demo
 cub unit apply backend-api-unit --space drift-test-demo
 
 # ❌ WRONG - NEVER use kubectl for corrections
@@ -539,9 +723,95 @@ bin/apply-all staging    # Apply staging
 kubectl apply -f k8s/  # Wrong! Bypasses ConfigHub
 ```
 
-## Testing Commands & Principles
+## MANDATORY Testing Protocol (BLOCKING)
 
-### **CRITICAL Testing Requirement: Validate ConfigHub-Only Commands**
+**NO COMMITS without passing all tests**
+
+### Step 1: Run Mini TCK (MANDATORY)
+```bash
+cd /Users/alexis/Public/github-repos/devops-sdk
+./test-confighub-k8s
+```
+
+This validates:
+- ConfigHub API connection works
+- Basic operations (space create, unit create, apply, destroy)
+- Your environment is correctly configured
+
+**Exit code 0 required. If Mini TCK fails, FIX IT before proceeding.**
+
+### Step 2: Run cub-command-analyzer (MANDATORY)
+```bash
+# Analyze single file
+./cub-command-analyzer.sh bin/my-script.sh
+
+# Analyze entire bin/ folder
+./cub-command-analyzer.sh bin/
+
+# Fix ALL invalid commands before proceeding
+```
+
+The analyzer validates:
+- **Syntax** (correct flag combinations)
+- **Grammar** (WHERE clause EBNF compliance)
+- **Common errors** (--patch without companions, inline JSON, etc.)
+
+**Exit code 0 = all valid. Exit code 1 = found invalid commands (BLOCKING).**
+
+### Step 3: Validate Config Files (MANDATORY)
+```bash
+# YAML syntax validation (MANDATORY for all YAML files)
+for file in confighub/**/*.yaml k8s/**/*.yaml; do
+  python3 -c "import yaml, sys; yaml.safe_load(open('$file'))" || echo "INVALID: $file"
+done
+
+# JSON syntax validation (MANDATORY for all JSON files)
+for file in **/*.json; do
+  jq empty "$file" || echo "INVALID: $file"
+done
+```
+
+**All files must pass validation. Fix invalid files before committing.**
+
+### Step 4: Run Project-Specific Tests (MANDATORY)
+```bash
+# Run all tests
+./test/run-all-tests.sh
+
+# Or specific test suites
+./test/unit/test-*.sh
+./test/integration/test-*.sh
+```
+
+**All tests must pass. Exit code 0 required.**
+
+### Step 5: Test Commands in Real ConfigHub Space (MANDATORY)
+```bash
+# Create throwaway space
+TEST_SPACE="test$RANDOM"
+cub space create $TEST_SPACE
+
+# Run your script against test space
+./bin/my-script.sh --space $TEST_SPACE
+
+# Verify expected results
+cub unit list --space $TEST_SPACE
+
+# Cleanup
+cub space delete $TEST_SPACE
+```
+
+**Commands must work against real ConfigHub before committing.**
+
+### When to Run Tests (MANDATORY)
+
+- ✅ **After setup** - Verify environment (run Mini TCK)
+- ✅ **Before committing** - Verify commands valid (run analyzer + tests)
+- ✅ **After making changes** - Verify nothing broke (run all tests)
+- ✅ **In CI/CD** - Catch regressions (automated test runs)
+
+### CRITICAL Testing Requirement: Validate ConfigHub-Only Commands
+
 All tests MUST verify that apps use ConfigHub commands exclusively:
 ```bash
 # Required test patterns in all test suites
@@ -549,43 +819,7 @@ test_api "Uses cub commands" '.corrections[0].command | contains("cub unit")' "t
 test_api "NO kubectl commands" '.corrections[0].command | contains("kubectl")' "false"
 ```
 
-### **Standard Testing Protocol**
-Always follow this 2-step testing approach:
-
-#### **Step 1: Local Tests First**
-```bash
-# Build
-go build ./...
-
-# Unit tests (mock data, no external dependencies)
-go test -v
-
-# Demo mode (simulated workflow)
-./drift-detector demo
-
-# Format and lint
-go fmt ./...
-golangci-lint run  # if available
-```
-
-#### **Step 2: Real Integration Tests**
-```bash
-# Set up real ConfigHub connection
-export CUB_TOKEN="your-confighub-token"
-export CUB_API_URL="https://confighub.com/api/v1"
-
-# Integration tests with real ConfigHub
-go test -tags=integration -v
-
-# Set up local Kind cluster
-kind create cluster --name devops-test
-
-# Deploy and test with real infrastructure
-kubectl apply -f k8s/
-./drift-detector  # runs against real ConfigHub + Kind cluster
-```
-
-### **Testing Environment Setup**
+### Testing Environment Setup
 ```bash
 # Kind cluster for testing
 kind create cluster --name devops-test
@@ -597,6 +831,98 @@ export CUB_API_URL="https://confighub.com/api/v1"
 
 # Optional: Claude for AI features
 export CLAUDE_API_KEY="your-claude-key"
+```
+
+## MANDATORY: Before Committing (BLOCKING)
+
+**Run this checklist EVERY TIME before git commit**
+
+### Pre-Commit Checklist
+
+Execute these steps in order. **If ANY step fails, do NOT commit. Fix and re-run.**
+
+- [ ] **Run cub-command-analyzer on changed files**
+  ```bash
+  ./cub-command-analyzer.sh bin/
+  # Exit code must be 0 (no invalid commands)
+  ```
+
+- [ ] **Fix all invalid commands**
+  - Review analyzer output for each invalid command
+  - Apply suggested corrections
+  - Re-run analyzer until exit code 0
+
+- [ ] **Run Mini TCK**
+  ```bash
+  cd /Users/alexis/Public/github-repos/devops-sdk
+  ./test-confighub-k8s
+  # Must pass with exit code 0
+  ```
+
+- [ ] **Run project tests**
+  ```bash
+  ./test/run-all-tests.sh
+  # All tests must pass
+  ```
+
+- [ ] **Validate YAML/JSON syntax**
+  ```bash
+  # Check all YAML files
+  find . -name "*.yaml" -not -path "./.git/*" -exec python3 -c "import yaml; yaml.safe_load(open('{}'))" \;
+
+  # Check all JSON files
+  find . -name "*.json" -not -path "./.git/*" -exec jq empty {} \;
+  ```
+
+- [ ] **Test commands in real ConfigHub space**
+  ```bash
+  TEST_SPACE="test$RANDOM"
+  cub space create $TEST_SPACE
+  # Run your script
+  ./bin/my-script.sh --space $TEST_SPACE
+  # Verify it works
+  cub space delete $TEST_SPACE
+  ```
+
+- [ ] **Verify no kubectl commands in code** (ConfigHub-only requirement)
+  ```bash
+  # Check for prohibited kubectl usage
+  grep -r "kubectl" bin/ --exclude="*.md" || echo "No kubectl found (good)"
+  ```
+
+### Failure Handling
+
+If any checklist item fails:
+1. **Do NOT commit**
+2. **Fix the issue**
+3. **Re-run the failed step**
+4. **Re-run all subsequent steps**
+5. **Only commit when ALL steps pass**
+
+### Automated Pre-Commit Hook (Recommended)
+
+Create `.git/hooks/pre-commit`:
+```bash
+#!/bin/bash
+
+echo "Running pre-commit validation..."
+
+# Run analyzer
+./cub-command-analyzer.sh bin/
+if [ $? -ne 0 ]; then
+    echo "❌ Found invalid cub commands. Commit aborted."
+    exit 1
+fi
+
+# Validate YAML
+find . -name "*.yaml" -not -path "./.git/*" -exec python3 -c "import yaml; yaml.safe_load(open('{}'))" \; 2>/dev/null
+if [ $? -ne 0 ]; then
+    echo "❌ Invalid YAML found. Commit aborted."
+    exit 1
+fi
+
+echo "✅ All validations passed"
+exit 0
 ```
 
 ## Current Status (Updated with Canonical Patterns)
