@@ -897,6 +897,28 @@ Execute these steps in order. **If ANY step fails, do NOT commit. Fix and re-run
   grep -r "kubectl" bin/ --exclude="*.md" || echo "No kubectl found (good)"
   ```
 
+- [ ] **Update testing documentation with validation results**
+  ```bash
+  # Add/update CLI Validation Status section in:
+  # - README.md or TESTING.md (for tutorials)
+  # - test/README.md (for projects)
+
+  # Example section to add:
+  ## CLI Validation Status
+
+  All ConfigHub CLI commands validated for correctness:
+
+  **Validation Results** (Last checked: YYYY-MM-DD):
+  ```
+  Total commands:    XX
+  Valid commands:    XX
+  Invalid commands:  0
+  Success rate:      100%
+  ```
+
+  **Validation tool**: [cub-command-analyzer](https://github.com/monadic/devops-sdk/blob/main/cub-command-analyzer.sh)
+  ```
+
 ### Failure Handling
 
 If any checklist item fails:

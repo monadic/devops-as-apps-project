@@ -193,6 +193,44 @@ app-name/
 
 This repository contains the core documentation for the ConfigHub pattern.  The examples are in a separate repo: [monadic/devops-examples](https://github.com/monadic/devops-examples).
 
+## 🔍 Quality Standards
+
+All projects in this organization follow strict quality standards:
+
+### CLI Command Validation
+
+**Every ConfigHub CLI command is validated for correctness:**
+
+- ✅ Command syntax (entity + verb structure)
+- ✅ Required flags and combinations
+- ✅ WHERE clause grammar (EBNF compliance)
+- ✅ No inline JSON with `--patch` (must use `--from-stdin`)
+- ✅ No invalid auth commands
+- ✅ No Data field queries in WHERE clauses
+
+**Validation tool**: [cub-command-analyzer](https://github.com/monadic/devops-sdk/blob/main/cub-command-analyzer.sh)
+
+**Current status:**
+- TraderX: 88/88 commands valid ✅
+- MicroTraderX: 66/66 commands valid ✅
+- DevOps Examples: 100% validated ✅
+
+**To validate your project:**
+```bash
+curl -fsSL https://raw.githubusercontent.com/monadic/devops-sdk/main/cub-command-analyzer.sh | bash -s -- .
+```
+
+### Testing Requirements
+
+All projects must include:
+- ✅ Unit tests for components
+- ✅ Integration tests with ConfigHub API
+- ✅ Mini TCK validation (ConfigHub + Kubernetes)
+- ✅ End-to-end workflow tests
+- ✅ CLI validation status in documentation
+
+See [CLAUDE.md](CLAUDE.md) for complete testing requirements.
+
 ## 🛠️ Prerequisites
 
 ### Required
