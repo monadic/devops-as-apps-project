@@ -741,12 +741,16 @@ This validates:
 **Exit code 0 required. If Mini TCK fails, FIX IT before proceeding.**
 
 ### Step 2: Run cub-command-analyzer (MANDATORY)
-```bash
-# Analyze single file
-./cub-command-analyzer.sh bin/my-script.sh
 
-# Analyze entire bin/ folder
-./cub-command-analyzer.sh bin/
+**Location**: `/Users/alexis/Public/github-repos/devops-sdk/cub-command-analyzer.sh`
+
+```bash
+# From devops-sdk directory
+cd /Users/alexis/Public/github-repos/devops-sdk
+./cub-command-analyzer.sh /path/to/your/project/bin/
+
+# Or run remotely
+curl -fsSL https://raw.githubusercontent.com/monadic/devops-sdk/main/cub-command-analyzer.sh | bash -s -- bin/
 
 # Fix ALL invalid commands before proceeding
 ```
@@ -843,7 +847,8 @@ Execute these steps in order. **If ANY step fails, do NOT commit. Fix and re-run
 
 - [ ] **Run cub-command-analyzer on changed files**
   ```bash
-  ./cub-command-analyzer.sh bin/
+  cd /Users/alexis/Public/github-repos/devops-sdk
+  ./cub-command-analyzer.sh /path/to/your/project/bin/
   # Exit code must be 0 (no invalid commands)
   ```
 
@@ -907,11 +912,18 @@ Create `.git/hooks/pre-commit`:
 
 echo "Running pre-commit validation..."
 
+# Path to SDK analyzer
+ANALYZER="/Users/alexis/Public/github-repos/devops-sdk/cub-command-analyzer.sh"
+
 # Run analyzer
-./cub-command-analyzer.sh bin/
-if [ $? -ne 0 ]; then
-    echo "❌ Found invalid cub commands. Commit aborted."
-    exit 1
+if [ -f "$ANALYZER" ]; then
+    "$ANALYZER" bin/
+    if [ $? -ne 0 ]; then
+        echo "❌ Found invalid cub commands. Commit aborted."
+        exit 1
+    fi
+else
+    echo "⚠ Analyzer not found at $ANALYZER - skipping cub validation"
 fi
 
 # Validate YAML
