@@ -252,15 +252,17 @@ Before running tests, Claude must:
 All projects MUST use ConfigHub standard testing conventions:
 
 1. **Test Library** (`test/scripts/test-lib.sh`):
-   - Copy from: https://github.com/confighubai/confighub/blob/main/test/scripts/test-lib.sh
+   - **Source**: https://github.com/confighubai/confighub/blob/main/test/scripts/test-lib.sh (official)
+   - **Do NOT fork** - always use official version to avoid drift
    - Provides: `createSpace`, `verifyEntityWithinSpaceExists`, `checkEntityWithinSpaceListLength`
    - Usage: `source "$ROOTDIR/test/scripts/test-lib.sh"`
 
 2. **Test Data** (`test-data/`):
-   - `metadata.json` - Default labels/annotations for units
-   - `space-metadata.json` - Default space metadata
-   - YAML fixtures for each service/component
-   - Reference: https://github.com/confighubai/confighub/tree/main/test-data
+   - Example fixtures in devops-sdk: `/Users/alexis/Public/github-repos/devops-sdk/test-data/`
+   - `metadata.json` - Unit labels/annotations template
+   - `space-metadata.json` - Space metadata template
+   - Copy these templates to your project and customize
+   - Official examples: https://github.com/confighubai/confighub/tree/main/test-data
 
 3. **YAML Validation** (REQUIRED for all config files):
    ```bash
