@@ -186,12 +186,12 @@ app-name/
 
 ### To learn more
 
-- **[Canonical Patterns Summary](CANONICAL-PATTERNS-SUMMARY.md)** - A deeper explanation of the principles of ConfigHub apps 
-- **[ConfigHub Deployment Pattern](CONFIGHUB-DEPLOYMENT-PATTERN.md)** - How to deploy apps via ConfigHub
-- **[ConfigHub SDK extension libary](https://github.com/monadic/devops-sdk)** - some SDK addons 
-- **[ConfigHub Actual Features](CONFIGHUB-ACTUAL-FEATURES.md)** - API notes (created by Claude)
+- **[CLI Reference](docs/CLI-REFERENCE.md)** - Verified ConfigHub CLI commands
+- **[ConfigHub SDK](https://github.com/monadic/devops-sdk)** - SDK extensions
+- **[ConfigHub Docs](https://docs.confighub.com)** - Official documentation
+- **[Global App Example](https://github.com/confighubai/examples/tree/main/global-app)** - Canonical reference implementation
 
-This repository contains the core documentation for the ConfigHub pattern.  The examples are in a separate repo: [monadic/devops-examples](https://github.com/monadic/devops-examples).
+Examples are in [monadic/devops-examples](https://github.com/monadic/devops-examples).
 
 ## 🔍 Quality Standards
 
@@ -261,11 +261,10 @@ See [monadic/devops-sdk](https://github.com/monadic/devops-sdk) for the Go SDK u
 
 To add a new DevOps app example:
 
-1. Copy structure from drift-detector, cost-optimizer, or TraderX
-2. Follow the global-app README pattern
-3. Follow ConfigHub patterns from [CANONICAL-PATTERNS-SUMMARY.md](CANONICAL-PATTERNS-SUMMARY.md)
-4. Consider scenario tasks with verification steps
-5. Implement comprehensive testing and documentation  
+1. Copy structure from drift-detector or cost-optimizer
+2. Follow the [global-app example](https://github.com/confighubai/examples/tree/main/global-app)
+3. Use verified CLI commands from [docs/CLI-REFERENCE.md](docs/CLI-REFERENCE.md)
+4. Validate commands with `cub-command-analyzer.sh`  
 
 ## 📄 License
 
