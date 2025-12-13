@@ -19,6 +19,53 @@ DevOps as Apps: persistent Kubernetes applications using ConfigHub for configura
 - Verify all ConfigHub features against actual CLI help before documenting.
 - Label uncertain content explicitly.
 
+## Documentation Code is Production Code (MANDATORY)
+
+**Code examples in README.md, tutorials, and documentation files require the same validation rigor as executable scripts.**
+
+### Why This Matters
+
+Users copy-paste documentation examples directly. Incorrect syntax in docs causes:
+- User frustration and support burden
+- Loss of trust in documentation quality
+- Propagation of errors as users build on broken examples
+
+### Validation Requirements for All .md Files
+
+**Before writing any code block in documentation:**
+
+1. **Verify CLI syntax** - Run `cub <cmd> --help` for every cub command
+2. **Test the exact command** - Copy-paste and execute in a test space
+3. **Check flag combinations** - Mode flags require specific companions
+
+**Before committing documentation with code examples:**
+
+```bash
+# Extract and validate all cub commands from markdown files
+grep -E '^\s*cub ' README.md | while read cmd; do
+  echo "Checking: $cmd"
+  # Each command should be verified against --help
+done
+
+# Run cub-command-analyzer on any extracted scripts
+./cub-command-analyzer.sh docs/
+```
+
+### Common Documentation Errors to Avoid
+
+| Wrong | Right | Issue |
+|-------|-------|-------|
+| `cub link create --from X --to Y` | `cub link create slug from-unit to-unit` | Links use positional args |
+| `--patch '{"spec":{}}'` | `cub run set-replicas --replicas N` | --patch is boolean, not value |
+| `cub set create` | `cub filter create` | cub set doesn't exist |
+| `cub changeset apply` | `cub unit apply --where "ChangeSet..."` | changeset apply doesn't exist |
+
+### Treating Documentation Bugs as Seriously as Code Bugs
+
+- Documentation syntax errors should block commits
+- README code examples need review just like source code
+- "Example code" is not exempt from validation
+
 ## CLI Command Validation (MANDATORY)
 
 Before using ANY cub command:
@@ -119,9 +166,32 @@ app-name/
 3. **Verify before documenting** - All CLI examples must be tested
 4. **No Sets CLI** - Sets exist in API but have no CLI commands
 
+## Critical: Unit Update Patterns
+
+**Updating unit YAML config data from stdin:**
+```bash
+# CORRECT: Use "-" for YAML config data from stdin
+cat config.yaml | cub unit update --space dev myunit -
+
+# WRONG: --from-stdin is for JSON metadata, NOT config data
+cat config.yaml | cub unit update myunit --from-stdin --space dev  # FAILS
+```
+
+**Updating unit metadata with --patch:**
+```bash
+# CORRECT: Patch mode with label changes
+cub unit update --patch --space dev myunit --label version=2.0
+
+# CORRECT: JSON metadata patch from stdin
+echo '{"Labels":{"tier":"critical"}}' | cub unit update --patch --space dev myunit --from-stdin
+```
+
+**Key insight:** `--from-stdin` reads JSON metadata. The `-` argument reads YAML config data.
+
 ## What NOT to Do
 
 - Don't use `cub set` commands (doesn't exist)
 - Don't use `--revision=N` (use `--revision N` with space)
 - Don't use `cub bulk apply` (doesn't exist, use `cub unit apply --where`)
+- Don't confuse `--from-stdin` (JSON metadata) with `-` (YAML config data)
 - Don't trust old documentation - verify against `cub --help`
