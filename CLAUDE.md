@@ -34,22 +34,38 @@ Users copy-paste documentation examples directly. Incorrect syntax in docs cause
 
 **Before writing any code block in documentation:**
 
-1. **Verify CLI syntax** - Run `cub <cmd> --help` for every cub command
-2. **Test the exact command** - Copy-paste and execute in a test space
-3. **Check flag combinations** - Mode flags require specific companions
+1. **Run Mini TCK first** - Verify your environment works before testing commands
+2. **Verify CLI syntax** - Run `cub <cmd> --help` for every cub command
+3. **Test the exact command** - Copy-paste and execute in a test space
+4. **Check flag combinations** - Mode flags require specific companions
 
 **Before committing documentation with code examples:**
 
 ```bash
-# Extract and validate all cub commands from markdown files
-grep -E '^\s*cub ' README.md | while read cmd; do
-  echo "Checking: $cmd"
-  # Each command should be verified against --help
-done
+# 1. Run Mini TCK to ensure environment is correctly configured
+cd /Users/alexis/Public/github-repos/devops-sdk
+./test-confighub-k8s  # Must pass before proceeding
 
-# Run cub-command-analyzer on any extracted scripts
-./cub-command-analyzer.sh docs/
+# 2. Extract cub commands from markdown and validate with cub-command-analyzer
+# This catches incorrect flag usage, non-existent commands, wrong syntax
+cd /Users/alexis/Public/github-repos/devops-sdk
+./cub-command-analyzer.sh /path/to/your/project/
+
+# 3. For README files with code examples, extract and validate
+grep -E '^\s*cub ' README.md | while read cmd; do
+  echo "Validating: $cmd"
+done
 ```
+
+### Required Tools for Documentation Validation
+
+| Tool | Location | Purpose |
+|------|----------|---------|
+| **Mini TCK** | `/Users/alexis/Public/github-repos/devops-sdk/test-confighub-k8s` | Verify ConfigHub API works |
+| **cub-command-analyzer** | `/Users/alexis/Public/github-repos/devops-sdk/cub-command-analyzer.sh` | Validate CLI syntax |
+| **cub --help** | CLI | Check individual command flags |
+
+**Both tools MUST pass before committing documentation with cub commands.**
 
 ### Common Documentation Errors to Avoid
 
