@@ -2,10 +2,15 @@
 
 ## Project Overview
 
+**THIS REPOSITORY:** Planning and documentation for DevOps-as-Apps examples and patterns.
+
+**NOT THIS REPOSITORY:** ConfigHub Agent implementation (see `~/Public/github-repos/confighub-agent` instead)
+
 DevOps as Apps: persistent Kubernetes applications using ConfigHub for configuration management.
 
 **Key repositories:**
-- This repo: Planning and docs
+- **This repo** (`~/devops-as-apps-project`): Planning, documentation, and examples
+- **confighub-agent** (`~/Public/github-repos/confighub-agent`): Agent implementation, CCVE scanner, map tool
 - [devops-sdk](https://github.com/monadic/devops-sdk): Go SDK
 - [devops-examples](https://github.com/monadic/devops-examples): drift-detector, cost-optimizer
 
