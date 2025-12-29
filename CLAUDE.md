@@ -2,7 +2,12 @@
 
 ## Project Overview
 
-**THIS REPOSITORY:** Planning and documentation for DevOps-as-Apps examples and patterns.
+**THIS REPOSITORY:** Planning, documentation, and example applications for testing.
+
+**Primary uses:**
+1. DevOps-as-Apps example applications (drift-detector, cost-optimizer, etc.)
+2. Test applications for confighub-agent development and validation
+3. Documentation and patterns for ConfigHub usage
 
 **NOT THIS REPOSITORY:** ConfigHub Agent implementation (see `~/Public/github-repos/confighub-agent` instead)
 
